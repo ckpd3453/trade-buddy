@@ -1,0 +1,424 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Trade-Buddy_Services API",
+    "version": "1.0.0",
+    "description": "API documentation for my Express project"
+  },
+  "host": "localhost:3000",
+  "basePath": "/api/v1",
+  "schemes": ["http"],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Welcome endpoint",
+        "responses": {
+          "200": {
+            "description": "Returns a welcome message",
+            "schema": {
+              "type": "string",
+              "example": "Welcome"
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "tags": ["Users Part"],
+        "summary": "Sign up a new user",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "User details",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully"
+          },
+          "400": {
+            "description": "User already exists"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Users Part"],
+        "summary": "Get all user accounts",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of user accounts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/signIn": {
+      "post": {
+        "tags": ["Users Part"],
+        "summary": "Sign in a user",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "credentials",
+            "description": "User credentials",
+            "schema": {
+              "$ref": "#/definitions/Credentials"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User signed in successfully"
+          },
+          "400": {
+            "description": "Invalid credentials"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/{_id}": {
+      "put": {
+        "tags": ["Users Part"],
+        "summary": "Update user profile",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "_id",
+            "required": true,
+            "type": "string",
+            "description": "User ID"
+          },
+          {
+            "in": "body",
+            "name": "user",
+            "description": "User details to update",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile updated successfully"
+          },
+          "400": {
+            "description": "Invalid user ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/forget": {
+      "post": {
+        "tags": ["Users Part"],
+        "summary": "Forgot password",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "email",
+            "description": "User email",
+            "schema": {
+              "$ref": "#/definitions/Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification link sent"
+          },
+          "400": {
+            "description": "Email not registered"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/reset": {
+      "post": {
+        "tags": ["Users Part"],
+        "summary": "Reset password",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "resetDetails",
+            "description": "Reset password details",
+            "schema": {
+              "$ref": "#/definitions/ResetDetails"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password reset successful"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/tradingAccounts": {
+      "post": {
+        "tags": ["TradingAccount"],
+        "summary": "Add a Trading account",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "trading account",
+            "description": "trading account details",
+            "schema": { "$ref": "#/definitions/TradingAccount" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Account created successfully" },
+          "500": { "description": "Something went wrong" }
+        }
+      },
+      "get": {
+        "tags": ["TradingAccount"],
+        "summary": "Get All Trading account",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "All Trading list fetched successfull" }
+        }
+      }
+    },
+    "/trades/{tradingAccountId}": {
+      "post": {
+        "tags": ["Trade Part"],
+        "summary": "Add a manual trade",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tradingAccountId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "manualTrade",
+            "description": "Manual trade details",
+            "schema": {
+              "$ref": "#/definitions/ManualTrade"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Manual trade added successfully"
+          },
+          "400": {
+            "description": "Invalid data"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "get": {
+        "tags": ["Trade Part"],
+        "summary": "Get all manual trades",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tradingAccountId",
+            "in": "path",
+            "description": "Account ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of manual trades",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ManualTrade"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/dataCenter": {
+      "post": {
+        "tags": ["CSV File Handling"],
+        "summary": "Upload CSV data",
+        "security": [
+          {
+            "Bearer": {
+              "$ref": "#/securityDefinitions"
+            }
+          }
+        ],
+        "consumes": ["multipart/form-data"],
+        "parameters": [
+          {
+            "in": "formData",
+            "name": "file",
+            "type": "file",
+            "description": "CSV file to upload"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "File uploaded and data saved to MongoDB"
+          },
+          "400": {
+            "description": "File not uploaded"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "country": { "type": "string" },
+        "timeZone": { "type": "string" },
+        "dateFormat": { "type": "string" },
+        "timeFormat": { "type": "string" },
+        "accountName": { "type": "string" }
+      }
+    },
+    "Credentials": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "Email": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" }
+      }
+    },
+    "ResetDetails": {
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "TradingAccount": {
+      "type": "object",
+      "properties": {
+        "bankName": { "type": "string" }
+      }
+    },
+    "ManualTrade": {
+      "type": "object",
+      "properties": {
+        "market": { "type": "string" },
+        "account": { "type": "string" },
+        "broker": { "type": "string" },
+        "assessment": { "type": "string" },
+        "strategy": { "type": "string" },
+        "instrument": { "type": "string" },
+        "tradeType": { "type": "string" },
+        "entryDate": { "type": "string" },
+        "entryTime": { "type": "string" },
+        "quantity": { "type": "integer" },
+        "price": { "type": "number" },
+        "openPosition": { "type": "string" },
+        "profitClosed": { "type": "number" },
+        "fees": { "type": "number" },
+        "comments": { "type": "string" }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter your bearer token in the format **Bearer &lt;token&gt;**"
+    }
+  }
+}

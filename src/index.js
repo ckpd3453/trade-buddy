@@ -29,10 +29,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('combined', { stream: logStream }));
 
-// Initialize database
-database().catch((err) => {
-  console.error('Database connection failed:', err);
-  process.exit(1); // Exit process if database connection fails
+database();
+app.get('/test', (req, res) => {
+  res.send('Test route is working!');
+});
+app.use((req, res, next) => {
+  console.log(`Request URL: ${req.url}`);
+  next();
 });
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerUiDoc));

@@ -4,7 +4,9 @@ import * as dataController from '../controllers/data.controller';
 import { userAuth } from '../middlewares/auth.middleware';
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+const storage = multer.memoryStorage(); //for server storage
+// const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage });
 
 router.post('/', upload.single('file'), userAuth, dataController.uploadCSVData);
 

@@ -31,9 +31,11 @@ export const newUserValidator = (req, res, next) => {
       }),
     accountName: Joi.object().optional()
   });
+
   const { error, value } = schema.validate(req.body);
+
   if (error) {
-    next(error);
+    return res.status(400).json({ error: error.details[0].message });
   } else {
     req.validatedBody = value;
     next();

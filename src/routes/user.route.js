@@ -5,9 +5,6 @@ import { userAuth } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 
-router.get('/test', (req, res) => {
-  res.json('Hello Bro');
-});
 //User-SignUp
 router.post('/', newUserValidator, userController.signUp);
 

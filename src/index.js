@@ -17,6 +17,7 @@ import {
 import logger, { logStream } from './config/logger';
 
 import morgan from 'morgan';
+import errorHandler from './middlewares/errorHandler';
 
 const app = express();
 // const host = process.env.APP_HOST || 'http://localhost';
@@ -30,14 +31,8 @@ app.use(express.json());
 app.use(morgan('combined', { stream: logStream }));
 
 database();
-app.get('/test', (req, res) => {
-  res.send('Test route is working!');
-});
-app.use((req, res, next) => {
-  console.log(`Request URL: ${req.url}`);
-  next();
-});
 
+app.use(errorHandler);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerUiDoc));
 app.use(`/api/${api_version}`, routes());
 app.use(appErrorHandler);

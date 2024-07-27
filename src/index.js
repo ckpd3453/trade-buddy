@@ -30,7 +30,9 @@ app.use(express.json());
 app.use(morgan('combined', { stream: logStream }));
 
 database();
-
+app.get('/test', (req, res) => {
+  res.send('Test route is working!');
+});
 app.use((req, res, next) => {
   console.log(`Request URL: ${req.url}`);
   next();

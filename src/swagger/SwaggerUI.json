@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "description": "API documentation for my Express project"
   },
-  "host": "localhost:3000",
+  "host": "trade-buddy-xi.vercel.app",
   "basePath": "/api/v1",
   "schemes": ["http"],
   "paths": {

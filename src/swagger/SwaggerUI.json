@@ -54,9 +54,7 @@
         "summary": "Get all user accounts",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "responses": {
@@ -108,9 +106,7 @@
         "summary": "Update user profile",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "parameters": [
@@ -176,9 +172,7 @@
         "summary": "Reset password",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "parameters": [
@@ -210,36 +204,43 @@
         "summary": "Add a Trading account",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "parameters": [
           {
             "in": "body",
             "name": "trading account",
-            "description": "trading account details",
-            "schema": { "$ref": "#/definitions/TradingAccount" }
-          }
-        ],
-        "responses": {
-          "201": { "description": "Account created successfully" },
-          "500": { "description": "Something went wrong" }
-        }
-      },
-      "get": {
-        "tags": ["TradingAccount"],
-        "summary": "Get All Trading account",
-        "security": [
-          {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
+            "description": "Trading account details",
+            "schema": {
+              "$ref": "#/definitions/TradingAccount"
             }
           }
         ],
         "responses": {
-          "200": { "description": "All Trading list fetched successfull" }
+          "201": {
+            "description": "Account created successfully"
+          },
+          "500": {
+            "description": "Something went wrong"
+          }
+        }
+      },
+      "get": {
+        "tags": ["TradingAccount"],
+        "summary": "Get All Trading accounts",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All Trading accounts fetched successfully"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
         }
       }
     },
@@ -249,9 +250,7 @@
         "summary": "Add a manual trade",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "parameters": [
@@ -287,9 +286,7 @@
         "summary": "Get all manual trades",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "parameters": [
@@ -323,9 +320,7 @@
         "summary": "Upload CSV data",
         "security": [
           {
-            "Bearer": {
-              "$ref": "#/securityDefinitions"
-            }
+            "Bearer": []
           }
         ],
         "consumes": ["multipart/form-data"],

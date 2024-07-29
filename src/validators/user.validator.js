@@ -19,16 +19,8 @@ export const newUserValidator = (req, res, next) => {
       .required(),
     country: Joi.string().min(3).required(),
     timeZone: Joi.string().min(3).required(),
-    dateFormat: Joi.string()
-      .pattern(/^\d{4}-\d{2}-\d{2}$/)
-      .messages({
-        'string.pattern.base': `Date format must be 'YYYY-MM-DD'`
-      }),
-    timeFormat: Joi.string()
-      .pattern(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/)
-      .messages({
-        'string.pattern.base': `Time format must be 'HH:mm:ss'`
-      }),
+    dateFormat: Joi.string().min(3).required(),
+    timeFormat: Joi.string().min(3).required(),
     accountName: Joi.object().optional()
   });
 

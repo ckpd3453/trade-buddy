@@ -33,7 +33,7 @@ app.use(morgan('combined', { stream: logStream }));
 database();
 
 // app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerUiDoc));
-app.use('api-docs', (req, res) => {
+app.use('api-docs/hel', (req, res) => {
   res.json('Welcome to Swagger Ui');
 });
 app.use(`/api/${api_version}`, routes());

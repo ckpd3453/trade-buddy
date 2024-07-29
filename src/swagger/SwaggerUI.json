@@ -6,7 +6,7 @@
     "description": "API documentation for my Express project"
   },
   "host": "trade-buddy-xi.vercel.app",
-  "basePath": "/api/v1",
+  "basePath": "https://trade-buddy-xi.vercel.app/api/v1",
   "schemes": ["http"],
   "paths": {
     "/": {

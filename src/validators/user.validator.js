@@ -21,7 +21,7 @@ export const newUserValidator = (req, res, next) => {
     timeZone: Joi.string().min(3).required(),
     dateFormat: Joi.string().min(3).required(),
     timeFormat: Joi.string().min(3).required(),
-    accountName: Joi.object().optional()
+    accountName: Joi.string().optional()
   });
 
   const { error, value } = schema.validate(req.body);

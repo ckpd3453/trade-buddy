@@ -1,6 +1,7 @@
 import User from '../models/user.model';
 import HttpStatus from 'http-status-codes';
 import * as userUtils from '../utils/user.util';
+import { createTradingAccount } from './tradingAccount.service';
 
 /**
  * @param {req.body} user
@@ -19,8 +20,16 @@ export const signUp = async (user) => {
 
     const secureUser = await userUtils.hashPassword(user);
 
-    const data = new User(secureUser);
+    console.log(user);
+
+    const { accountName, ...newUser } = secureUser;
+    const data = new User(newUser);
     await data.save();
+    await createTradingAccount({
+      userId: data._id,
+      bankName: user.accountName
+    });
+    console.log(data);
     return {
       code: HttpStatus.CREATED,
       data: data,

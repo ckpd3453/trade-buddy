@@ -29,7 +29,6 @@ export const signUp = async (user) => {
       userId: data._id,
       bankName: user.accountName
     });
-    console.log(data);
     return {
       code: HttpStatus.CREATED,
       data: data,

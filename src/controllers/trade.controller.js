@@ -13,6 +13,7 @@ export const getAllTrade = async (req, res) => {
 };
 
 export const getAllTradeOfUser = async (req, res) => {
+  console.log('getting all trade of user...........');
   const data = await TradeService.getAllTradeOfUser(req.body);
   res.status(data.code).json({
     code: data.code,

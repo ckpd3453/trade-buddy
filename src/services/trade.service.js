@@ -60,6 +60,34 @@ export const getAllTrade = async (tradingAccountId, body) => {
   }
 };
 
+export const getAllTradeOfUser = async (body) => {
+  try {
+    const tradingAccount = await TradingAccount.findById(body.userId).populate(
+      'trades'
+    );
+
+    if (!tradingAccount) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: [],
+        message: 'No trading account exists with this ID'
+      };
+    }
+
+    return {
+      code: HttpStatus.OK,
+      data: tradingAccount.trades,
+      message: 'All trades fetched successfully'
+    };
+  } catch (error) {
+    return {
+      code: HttpStatus.INTERNAL_SERVER_ERROR,
+      data: [],
+      message: 'Something went wrong'
+    };
+  }
+};
+
 export const groupTrade = async (body) => {
   try {
     const {
@@ -102,7 +130,7 @@ export const groupTrade = async (body) => {
     );
 
     return {
-      code: HttpStatus.OK,
+      code: HttpStatus.CREATED,
       data: newGroupTrade,
       message: 'Group trade created successfully'
     };

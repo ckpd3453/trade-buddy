@@ -12,6 +12,15 @@ export const getAllTrade = async (req, res) => {
   });
 };
 
+export const getAllTradeOfUser = async (req, res) => {
+  const data = await TradeService.getAllTradeOfUser(req.body);
+  res.status(data.code).json({
+    code: data.code,
+    data: data.data,
+    message: data.message
+  });
+};
+
 export const createTrade = async (req, res) => {
   console.log('------------------->>>>>>>>>>>>>In Controller');
 

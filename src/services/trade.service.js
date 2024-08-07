@@ -62,9 +62,12 @@ export const getAllTrade = async (tradingAccountId, body) => {
 
 export const getAllTradeOfUser = async (body) => {
   try {
-    const tradingAccount = await TradingAccount.findById(body.userId).populate(
-      'trades'
-    );
+    // Use findOne to search by userId
+    const tradingAccount = await TradingAccount.findOne({
+      userId: body.userId
+    }).populate('trades');
+
+    console.log('Fetched Trading Account:', tradingAccount);
 
     if (!tradingAccount) {
       return {
@@ -80,6 +83,7 @@ export const getAllTradeOfUser = async (body) => {
       message: 'All trades fetched successfully'
     };
   } catch (error) {
+    console.error('Error fetching trading account:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
@@ -87,7 +91,6 @@ export const getAllTradeOfUser = async (body) => {
     };
   }
 };
-
 export const groupTrade = async (body) => {
   try {
     const {

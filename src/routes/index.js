@@ -5,6 +5,7 @@ import userRoute from './user.route';
 import dataRoute from './data.route';
 import tradeRoute from './trade.route';
 import tradingAccountRoute from './tradingAccount.route';
+import tradeAnalysisRoute from './tradeAnalysis.route';
 /**
  * Function contains Application routes
  *
@@ -18,6 +19,7 @@ const routes = () => {
   router.use('/dataCenter', dataRoute);
   router.use('/tradingAccounts', tradingAccountRoute);
   router.use('/trades', tradeRoute);
+  router.use('/tradeAnalysis', tradeAnalysisRoute);
   return router;
 };
 

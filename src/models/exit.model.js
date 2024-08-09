@@ -15,8 +15,10 @@ const exitModel = new Schema({
     ref: 'Trade',
     required: true
   },
-  exitDate: { type: String },
-  exitTime: { type: String }
+  exitDate: { type: Date },
+  exitTime: { type: String },
+  quantity: { type: Number, require: true },
+  price: { type: Number, require: true }
 });
 
 export default model('Exit', exitModel);

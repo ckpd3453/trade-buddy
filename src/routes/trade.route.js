@@ -16,6 +16,5 @@ router.put(
   userAuth,
   tradeController.updateGroupTrade
 );
-// router.get('/trade-analysis', userAuth, tradeController.getAnalysis);
 
 export default router;

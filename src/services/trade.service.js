@@ -21,28 +21,11 @@ export const createTrade = async (tradeAccountId, body) => {
       $push: { trades: trade._id }
     });
 
-    // Fetch the latest price (this logic may need to be adapted to your app)
-    const latestPrice = 400; //await getLatestPrice(); // Implement this function based on your needs
-
-    // Create a default exit with quantity: 0 and the latest price
-    const defaultExit = new Exit({
-      tradingAccountId: newTradeAccountId,
-      tradeId: trade._id,
-      exitDate: new Date(),
-      exitTime: new Date().toISOString().split('T')[1].split('.')[0], // Set current time
-      quantity: 0,
-      price: latestPrice
-    });
-
-    await defaultExit.save();
-
-    // Update the trade to include this default exit
-    trade.exit.push(defaultExit._id);
     await trade.save();
 
     return {
       code: HttpStatus.OK,
-      data: { trade, defaultExit },
+      data: trade,
       message: 'Added Manual trade with default exit successfully'
     };
   } catch (error) {
@@ -85,12 +68,20 @@ export const getAllTrade = async (tradingAccountId, body) => {
 export const getAllTradeOfUser = async (body) => {
   try {
     // Use findOne to search by userId
-    const tradingAccount = await TradingAccount.findOne({
+    console.log(body);
+
+    const tradingAccount = await TradingAccount.find({
       userId: body.userId
     }).populate('trades');
 
-    console.log('Fetched Trading Account:', tradingAccount);
+    console.log(tradingAccount);
 
+    var allTradesOfUser = [];
+    tradingAccount.map((account) => {
+      account.trades.map((trade) => {
+        allTradesOfUser.push(trade);
+      });
+    });
     if (!tradingAccount) {
       return {
         code: HttpStatus.BAD_REQUEST,
@@ -101,7 +92,7 @@ export const getAllTradeOfUser = async (body) => {
 
     return {
       code: HttpStatus.OK,
-      data: tradingAccount.trades,
+      data: allTradesOfUser,
       message: 'All trades fetched successfully'
     };
   } catch (error) {

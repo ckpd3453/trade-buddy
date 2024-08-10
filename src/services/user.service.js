@@ -87,7 +87,6 @@ export const signIn = async (userCredential) => {
 
 export const updateProfile = async (updateBody) => {
   try {
-    console.log(updateBody);
     const user = await User.findById(updateBody.userId);
 
     if (!user) {
@@ -158,7 +157,6 @@ export const getAllAccount = async () => {
       message: 'Accounts fetched successfully'
     };
   } catch (error) {
-    console.error('Error getting all user:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],

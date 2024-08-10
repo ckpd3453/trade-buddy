@@ -147,11 +147,12 @@ export const groupTrade = async (body) => {
   }
 };
 
-// New service function to create exit data
+// Service function to create exit data
 export const createExit = async (tradeId, body) => {
   try {
-    console.log(tradeId, body);
+    // Find the trade by its ID
     const trade = await Trade.findById(tradeId);
+
     if (!trade) {
       return {
         code: HttpStatus.BAD_REQUEST,
@@ -160,6 +161,23 @@ export const createExit = async (tradeId, body) => {
       };
     }
 
+    // Calculate the total quantity of existing exits
+    const existingExits = await Exit.find({ tradeId });
+    const totalExitQuantity = existingExits.reduce(
+      (sum, exit) => sum + exit.quantity,
+      0
+    );
+
+    // Check if adding the new exit would exceed the trade's quantity
+    if (totalExitQuantity + body.quantity > trade.tradeQuantity) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: [],
+        message: 'Total exit quantity exceeds trade quantity'
+      };
+    }
+
+    // Create the new exit
     const exit = new Exit({
       tradingAccountId: trade.tradingAccountId,
       tradeId,
@@ -167,6 +185,7 @@ export const createExit = async (tradeId, body) => {
     });
     await exit.save();
 
+    // Update the trade to include this exit
     trade.exit.push(exit._id);
     await trade.save();
 
@@ -179,11 +198,10 @@ export const createExit = async (tradeId, body) => {
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
-      message: 'Something went wrong'
+      message: `Something went wrong: ${error.message}`
     };
   }
 };
-
 export const getAllTradeGroup = async () => {
   try {
     const groupTrades = await GroupTrade.find().populate('trades');

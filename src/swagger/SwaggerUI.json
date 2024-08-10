@@ -244,6 +244,35 @@
         }
       }
     },
+    "/trades": {
+      "post": {
+        "tags": ["Trade Part"],
+        "summary": "Group all manual trade",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "groupManualTrade",
+            "description": "Grouping Manual trade details",
+            "schema": {
+              "$ref": "#/definitions/GroupManualTrade"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Group trade created successfully"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/trades/{tradingAccountId}": {
       "post": {
         "tags": ["Trade Part"],
@@ -390,6 +419,39 @@
     "ManualTrade": {
       "type": "object",
       "properties": {
+        "market": {
+          "type": "string"
+        },
+        "account": { "type": "string" },
+        "exchange": { "type": "string" },
+        "brokerName": { "type": "string" },
+        "marketAssessment": { "type": "string" },
+        "tradeStrategy": { "type": "string" },
+        "stockName": { "type": "string" },
+        "tradeType": { "type": "string" },
+        "profitTarget": { "type": "string" },
+        "stopLoss": { "type": "string" },
+        "entryDate": { "type": "string" },
+        "entryTime": { "type": "string" },
+        "tradeQuantity": { "type": "Number" },
+        "tradeExitQuantity": { "type": "Number" },
+        "tradeStatus": { "type": "string" },
+        "brokerage": { "type": "string" },
+        "cmp": { "type": "string" },
+        "openQuantity": { "type": "Number" },
+        "expiry": { "type": "string" },
+        "price": { "type": "Number" },
+        "numOfLots": { "type": "string" },
+        "lotSize": { "type": "string" },
+        "openPosition": { "type": "string" },
+        "profitClosed": { "type": "Number" },
+        "profitOpen": { "type": "Number" }
+      }
+    },
+    "GroupManualTrade": {
+      "type": "object",
+      "properties": {
+        "groupName": { "type": "string" },
         "market": { "type": "string" },
         "account": { "type": "string" },
         "broker": { "type": "string" },
@@ -397,14 +459,9 @@
         "strategy": { "type": "string" },
         "instrument": { "type": "string" },
         "tradeType": { "type": "string" },
-        "entryDate": { "type": "string" },
-        "entryTime": { "type": "string" },
-        "quantity": { "type": "integer" },
-        "price": { "type": "number" },
-        "openPosition": { "type": "string" },
-        "profitClosed": { "type": "number" },
-        "fees": { "type": "number" },
-        "comments": { "type": "string" }
+        "quantity": { "type": "Number" },
+        "price": { "type": "Number" },
+        "trades": [{ "type": "string" }]
       }
     }
   },

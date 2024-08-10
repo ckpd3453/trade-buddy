@@ -22,12 +22,8 @@ export const getToken = async (user) => {
     {
       id: user._id,
       email: user.email,
-      fname: user.firstName,
-      lname: user.lastName,
-      country: user.country,
-      timeZone: user.timeZone,
-      dateFortmat: user.dateFortmat,
-      timeFormat: user.timeFormat
+      fName: user.firstName,
+      lName: user.lastName
     },
     process.env.TOKEN_KEY
   );

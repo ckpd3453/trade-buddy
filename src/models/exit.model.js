@@ -18,7 +18,14 @@ const exitModel = new Schema({
   exitDate: { type: Date },
   exitTime: { type: String },
   quantity: { type: Number, require: true },
-  price: { type: Number, require: true }
+  price: { type: Number, require: true },
+  // Reference to TradeAnalysis
+  tradeAnalysis: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'TradeAnalysis'
+    }
+  ]
 });
 
 export default model('Exit', exitModel);

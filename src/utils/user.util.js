@@ -19,7 +19,16 @@ export const validatePassword = async (loginUser, dbUser) => {
 
 export const getToken = async (user) => {
   const token = jwt.sign(
-    { id: user._id, email: user.email },
+    {
+      id: user._id,
+      email: user.email,
+      fname: user.firstName,
+      lname: user.lastName,
+      country: user.country,
+      timeZone: user.timeZone,
+      dateFortmat: user.dateFortmat,
+      timeFormat: user.timeFormat
+    },
     process.env.TOKEN_KEY
   );
   return token;

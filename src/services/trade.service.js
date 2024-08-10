@@ -4,12 +4,15 @@ import GroupTrade from '../models/groupTrade.model';
 import HttpStatus from 'http-status-codes';
 import mongoose from 'mongoose';
 import Exit from '../models/exit.model';
+import tradeAnalysisModel from '../models/tradeAnalysis.model';
 
 export const createTrade = async (tradeAccountId, body) => {
   try {
     const newTradeAccountId = mongoose.Types.ObjectId(tradeAccountId);
+
     const updatedTradeDetail = { tradingAccountId: newTradeAccountId, ...body };
 
+    // Create the trade
     const trade = new Trade(updatedTradeDetail);
     await trade.save();
 
@@ -18,16 +21,35 @@ export const createTrade = async (tradeAccountId, body) => {
       $push: { trades: trade._id }
     });
 
+    // Fetch the latest price (this logic may need to be adapted to your app)
+    const latestPrice = 400; //await getLatestPrice(); // Implement this function based on your needs
+
+    // Create a default exit with quantity: 0 and the latest price
+    const defaultExit = new Exit({
+      tradingAccountId: newTradeAccountId,
+      tradeId: trade._id,
+      exitDate: new Date(),
+      exitTime: new Date().toISOString().split('T')[1].split('.')[0], // Set current time
+      quantity: 0,
+      price: latestPrice
+    });
+
+    await defaultExit.save();
+
+    // Update the trade to include this default exit
+    trade.exit.push(defaultExit._id);
+    await trade.save();
+
     return {
       code: HttpStatus.OK,
-      data: trade,
-      message: 'Added Manual trade successfully'
+      data: { trade, defaultExit },
+      message: 'Added Manual trade with default exit successfully'
     };
   } catch (error) {
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
-      message: 'Something went wrong'
+      message: `Something went wrong: ${error.message}`
     };
   }
 };
@@ -185,6 +207,68 @@ export const createExit = async (tradeId, body) => {
     });
     await exit.save();
 
+    // Calculate trade analysis for the new exit
+    const position =
+      trade.tradeQuantity > totalExitQuantity + body.quantity
+        ? 'Open'
+        : 'Close';
+    const resultClosedPosition =
+      position === 'Close'
+        ? (body.price - trade.price) * body.quantity < 0
+          ? 'Loss'
+          : 'Profit'
+        : null;
+    const profitClosedPosition =
+      resultClosedPosition === 'Profit'
+        ? (body.price - trade.price) * body.quantity
+        : 0;
+    const lossClosedPosition =
+      resultClosedPosition === 'Loss'
+        ? (body.price - trade.price) * body.quantity
+        : 0;
+    const profitAndLossOpenPosition =
+      position === 'Open' ? (body.price - trade.price) * body.quantity : 0;
+
+    const tradeDuration =
+      position === 'Close'
+        ? (new Date(body.exitDate) - new Date(trade.entryDate)) /
+          (1000 * 60 * 60 * 24)
+        : null;
+    const tradeStrategy =
+      tradeDuration > 10 || tradeDuration === null
+        ? 'Investment'
+        : tradeDuration <= 0
+        ? 'Intraday'
+        : 'Swing';
+    const investment =
+      trade.tradeType === 'Buy'
+        ? trade.tradeQuantity * trade.price
+        : body.quantity * body.price;
+    const roi =
+      position === 'Open'
+        ? (profitAndLossOpenPosition * 100) / investment
+        : (profitClosedPosition * 100) / investment;
+
+    // Create and save the TradeAnalysis
+    const tradeAnalysis = new tradeAnalysisModel({
+      tradeId: trade._id,
+      exitId: exit._id,
+      position: position,
+      resultClosedPosition: resultClosedPosition,
+      profitClosedPosition: profitClosedPosition,
+      lossClosedPosition: lossClosedPosition,
+      profitAndLossOpenPosition: profitAndLossOpenPosition,
+      tradeDuration: tradeDuration,
+      tradeStrategy: tradeStrategy,
+      investment: investment,
+      roi: roi
+    });
+    await tradeAnalysis.save();
+
+    // Update the exit document to include the tradeAnalysis reference
+    exit.tradeAnalysis.push(tradeAnalysis._id);
+    await exit.save();
+
     // Update the trade to include this exit
     trade.exit.push(exit._id);
     await trade.save();
@@ -192,7 +276,8 @@ export const createExit = async (tradeId, body) => {
     return {
       code: HttpStatus.OK,
       data: exit,
-      message: 'Exit created and trade updated successfully'
+      message:
+        'Exit created, trade analysis calculated, and trade updated successfully'
     };
   } catch (error) {
     return {
@@ -202,6 +287,7 @@ export const createExit = async (tradeId, body) => {
     };
   }
 };
+
 export const getAllTradeGroup = async () => {
   try {
     const groupTrades = await GroupTrade.find().populate('trades');

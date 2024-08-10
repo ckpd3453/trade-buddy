@@ -1,22 +1,58 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-// Function to get or create a model with a dynamic schema
-const tradeAnalysis = new Schema({
+const tradeAnalysisSchema = new mongoose.Schema({
   tradeId: {
-    type: Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Trade',
     required: true
   },
-  position: { type: String },
-  resultClosedPosition: { type: String },
-  profitClosedPosition: { type: String },
-  lossClosedPosition: { type: String },
-  profitAndLossOpenPosition: { type: String },
-  remainingQuantity: { type: String },
-  tradeDuration: { type: String },
-  tradeStrategyType: { type: String },
-  investment: { type: String },
-  roi: { type: String }
+  exitId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Exit'
+  },
+  position: {
+    type: String,
+    enum: ['Open', 'Close'],
+    required: true
+  },
+  resultClosedPosition: {
+    type: String,
+    enum: ['Profit', 'Loss']
+  },
+  profitClosedPosition: {
+    type: Number,
+    default: 0
+  },
+  lossClosedPosition: {
+    type: Number,
+    default: 0
+  },
+  profitAndLossOpenPosition: {
+    type: Number,
+    default: 0
+  },
+  tradeDuration: {
+    type: Number // Number of days
+  },
+  tradeStrategy: {
+    type: String,
+    enum: ['Intraday', 'Swing', 'Investment']
+  },
+  investment: {
+    type: Number,
+    required: true
+  },
+  roi: {
+    type: Number // Percentage
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-export default model('TradeAnalysis', tradeAnalysis);
+export default mongoose.model('TradeAnalysis', tradeAnalysisSchema);

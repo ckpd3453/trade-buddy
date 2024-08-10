@@ -1,11 +1,12 @@
-import exitModel from '../models/exit.model';
-import tradeModel from '../models/trade.model';
+import Trade from '../models/trade.model';
+import Exit from '../models/exit.model';
+import TradeAnalysis from '../models/tradeAnalysis.model';
 import HttpStatus from 'http-status-codes';
 
 export const getAllTradeAnalysis = async (tradeId) => {
   try {
     // Fetch the trade document
-    const trade = await tradeModel.findById(tradeId);
+    const trade = await Trade.findById(tradeId);
 
     if (!trade) {
       return {
@@ -14,84 +15,48 @@ export const getAllTradeAnalysis = async (tradeId) => {
       };
     }
 
+    // If there are no exits, return default analysis
+    if (!trade.exit || trade.exit.length === 0) {
+      const defaultAnalysis = {
+        tradeId: tradeId,
+        exitAnalyses: [],
+        overallAnalysis: {
+          cumulativeExitQuantity: 0,
+          remainingQuantity: trade.tradeQuantity,
+          message: 'No exits found for this trade'
+        }
+      };
+
+      return {
+        code: HttpStatus.OK,
+        data: defaultAnalysis,
+        message: 'No exits found for the trade. Default analysis returned.'
+      };
+    }
+
     // Initialize cumulative values
     let cumulativeExitQuantity = 0;
     let overallAnalysis = null;
     let exitAnalyses = [];
 
-    // Analyze each exit
+    // Fetch trade analysis for each exit
     const analysisPromises = trade.exit.map(async (exitObj) => {
       try {
-        const exit = await exitModel.findById(exitObj);
+        const tradeAnalysis = await TradeAnalysis.findOne({
+          exitId: exitObj
+        });
 
-        if (!exit) {
+        if (!tradeAnalysis) {
           return {
-            error: `Exit with ID ${exitObj} not found`
+            error: `Trade analysis for exit ID ${exitObj} not found`
           };
         }
 
-        const position =
-          trade.tradeQuantity > exit.quantity + cumulativeExitQuantity
-            ? 'Open'
-            : 'Close';
-        const resultClosedPosition =
-          position === 'Close'
-            ? (exit.price - trade.price) * exit.quantity < 0
-              ? 'Loss'
-              : 'Profit'
-            : null;
-        const profitClosedPosition =
-          resultClosedPosition === 'Profit'
-            ? (exit.price - trade.price) * exit.quantity
-            : null;
-        const lossClosedPosition =
-          resultClosedPosition === 'Loss'
-            ? (exit.price - trade.price) * exit.quantity
-            : null;
-        const profitAndLossOpenPosition =
-          position === 'Open'
-            ? (exit.price - trade.price) * exit.quantity
-            : null;
+        cumulativeExitQuantity += tradeAnalysis.exitQuantity;
 
-        cumulativeExitQuantity += exit.quantity; // Update cumulative quantity
+        exitAnalyses.push(tradeAnalysis); // Collect the analysis for this exit
 
-        const tradeDuration =
-          position === 'Close'
-            ? (new Date(exit.exitDate) - new Date(trade.entryDate)) /
-              (1000 * 60 * 60 * 24)
-            : null;
-        const tradeStrategy =
-          tradeDuration > 10 || tradeDuration === null
-            ? 'Investment'
-            : tradeDuration <= 0
-            ? 'Intraday'
-            : 'Swing';
-        const investment =
-          trade.tradeType === 'Buy'
-            ? trade.tradeQuantity * trade.price
-            : exit.quantity * exit.price;
-        const roi =
-          position === 'Open'
-            ? (profitAndLossOpenPosition * 100) / investment
-            : (profitClosedPosition * 100) / investment;
-
-        const analysis = {
-          tradeId: tradeId,
-          exitId: exit._id,
-          position: position,
-          resultClosedPosition: resultClosedPosition,
-          profitClosedPosition: profitClosedPosition,
-          lossClosedPosition: lossClosedPosition,
-          profitAndLossOpenPosition: profitAndLossOpenPosition,
-          tradeDuration: tradeDuration,
-          tradeStrategy: tradeStrategy,
-          investment: investment,
-          roi: roi
-        };
-
-        exitAnalyses.push(analysis); // Collect the analysis for this exit
-
-        return analysis;
+        return tradeAnalysis;
       } catch (error) {
         return {
           error: `Error processing exit with ID ${exitObj}: ${error.message}`

@@ -21,9 +21,7 @@ export const getToken = async (user) => {
   const token = jwt.sign(
     {
       id: user._id,
-      email: user.email,
-      fName: user.firstName,
-      lName: user.lastName
+      email: user.email
     },
     process.env.TOKEN_KEY
   );

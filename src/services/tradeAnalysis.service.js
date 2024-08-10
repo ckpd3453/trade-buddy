@@ -7,8 +7,6 @@ export const getAllTradeAnalysis = async (tradeId) => {
 
   const exit = await exitModel.findById(trade.exit);
 
-  console.log(exit);
-
   const position = trade.tradeQuantity > exit.quantity ? 'Open' : 'Close';
   const resultClosedPosition =
     position == 'Close'
@@ -60,7 +58,6 @@ export const getAllTradeAnalysis = async (tradeId) => {
     roi: roi
     // if(Position == Open) ? (profitLossAtOpenPosition * 100) / investment : (profitLossAtClosedPosition * 100) / investment
   };
-  console.log('------------>>>>>>>>>.', analysis);
   return {
     code: HttpStatus.OK,
     data: analysis,

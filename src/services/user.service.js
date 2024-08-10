@@ -57,7 +57,7 @@ export const signIn = async (userCredential) => {
         const token = await userUtils.getToken(checkUser);
         return {
           code: HttpStatus.OK,
-          data: token,
+          data: checkUser,
           message: 'user login success.'
         };
       } else {

@@ -34,7 +34,8 @@ export const getAllTradingAccountList = async (body) => {
     userId: body.userId
   })
     .populate('userId')
-    .populate('trades');
+    .populate('trades')
+    .populate('accountName');
 
   return {
     code: HttpStatus.OK,

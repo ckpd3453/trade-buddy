@@ -68,13 +68,10 @@ export const getAllTrade = async (tradingAccountId, body) => {
 export const getAllTradeOfUser = async (body) => {
   try {
     // Use findOne to search by userId
-    console.log(body);
 
     const tradingAccount = await TradingAccount.find({
       userId: body.userId
     }).populate('trades');
-
-    console.log(tradingAccount);
 
     var allTradesOfUser = [];
     tradingAccount.map((account) => {
@@ -279,9 +276,11 @@ export const createExit = async (tradeId, body) => {
   }
 };
 
-export const getAllTradeGroup = async () => {
+export const getAllTradeGroup = async (body) => {
   try {
-    const groupTrades = await GroupTrade.find().populate('trades');
+    const groupTrades = await GroupTrade.find({
+      userId: body.userId
+    }).populate('trades');
 
     return {
       code: HttpStatus.OK,

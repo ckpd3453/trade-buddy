@@ -132,22 +132,33 @@ function getLatestTrades(trades, currentDate, tradeDuration) {
 }
 
 async function getTradeCountOnMarketBasedByDate(trades) {
-  let tradeCountByDateAndMarket = {};
+  let tradeCountByDateAndMarket = [];
 
   for (const trade of trades) {
     const market = trade.market.toLowerCase();
     const entryDate = moment(trade.entryDate).format('YYYY-MM-DD');
 
-    if (!tradeCountByDateAndMarket[entryDate]) {
-      tradeCountByDateAndMarket[entryDate] = {
-        equity: { count: 0, ProfitCount: 0, LossCount: 0 },
-        equityFeatures: { count: 0, ProfitCount: 0, LossCount: 0 },
-        equityOptions: { count: 0, ProfitCount: 0, LossCount: 0 },
-        commodity: { count: 0, ProfitCount: 0, LossCount: 0 },
-        commodityFutures: { count: 0, ProfitCount: 0, LossCount: 0 }
+    // Find the date object in the array
+    let dateObject = tradeCountByDateAndMarket.find(
+      (item) => item.date === entryDate
+    );
+
+    // If the date doesn't exist, create a new object
+    if (!dateObject) {
+      dateObject = {
+        date: entryDate,
+        markets: {
+          equity: { count: 0, ProfitCount: 0, LossCount: 0 },
+          equityFutures: { count: 0, ProfitCount: 0, LossCount: 0 },
+          equityOptions: { count: 0, ProfitCount: 0, LossCount: 0 },
+          commodity: { count: 0, ProfitCount: 0, LossCount: 0 },
+          commodityFutures: { count: 0, ProfitCount: 0, LossCount: 0 }
+        }
       };
+      tradeCountByDateAndMarket.push(dateObject);
     }
 
+    // Get trade analysis and calculate profit/loss
     const tradeAnalysis = await getAllTradeAnalysis(trade._id);
     let totalProfitLoss = 0;
     if (tradeAnalysis.data.exitAnalyses.length > 0) {
@@ -157,7 +168,8 @@ async function getTradeCountOnMarketBasedByDate(trades) {
       });
     }
 
-    const marketData = tradeCountByDateAndMarket[entryDate][market];
+    // Update the market data within the date object
+    const marketData = dateObject.markets[market];
 
     if (marketData) {
       marketData.count += 1;
@@ -191,48 +203,56 @@ export const profitAndLossGraph = async (body) => {
 };
 
 async function getTradeProfitAndLossOnMarketBasedByDate(trades) {
-  let profitLossByDate = {};
+  let profitLossByDate = [];
 
   for (const trade of trades) {
     const market = trade.market.toLowerCase();
-
     const entryDate = moment(trade.entryDate).format('YYYY-MM-DD');
 
-    if (!profitLossByDate[entryDate]) {
-      profitLossByDate[entryDate] = {
-        equity: {
-          totalProfit: 0,
-          totalLoss: 0,
-          amountProfit: 0,
-          amountLoss: 0
-        },
-        equityFeatures: {
-          totalProfit: 0,
-          totalLoss: 0,
-          amountProfit: 0,
-          amountLoss: 0
-        },
-        equityOptions: {
-          totalProfit: 0,
-          totalLoss: 0,
-          amountProfit: 0,
-          amountLoss: 0
-        },
-        commodity: {
-          totalProfit: 0,
-          totalLoss: 0,
-          amountProfit: 0,
-          amountLoss: 0
-        },
-        commodityFutures: {
-          totalProfit: 0,
-          totalLoss: 0,
-          amountProfit: 0,
-          amountLoss: 0
+    // Find the date object in the array
+    let dateObject = profitLossByDate.find((item) => item.date === entryDate);
+
+    // If the date doesn't exist, create a new object
+    if (!dateObject) {
+      dateObject = {
+        date: entryDate,
+        markets: {
+          equity: {
+            totalProfit: 0,
+            totalLoss: 0,
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          equityFutures: {
+            totalProfit: 0,
+            totalLoss: 0,
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          equityOptions: {
+            totalProfit: 0,
+            totalLoss: 0,
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          commodity: {
+            totalProfit: 0,
+            totalLoss: 0,
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          commodityFutures: {
+            totalProfit: 0,
+            totalLoss: 0,
+            amountProfit: 0,
+            amountLoss: 0
+          }
         }
       };
+      profitLossByDate.push(dateObject);
     }
 
+    // Get trade analysis and calculate profit/loss
     const tradeAnalysis = await getAllTradeAnalysis(trade._id);
     const exitTrade = await exitModel.findById(trade.exit);
 
@@ -254,7 +274,8 @@ async function getTradeProfitAndLossOnMarketBasedByDate(trades) {
       });
     }
 
-    const marketData = profitLossByDate[entryDate][market];
+    // Update the market data within the date object
+    const marketData = dateObject.markets[market];
     if (marketData) {
       if (totalProfitLoss > 0) {
         marketData.totalProfit += totalProfitLoss;

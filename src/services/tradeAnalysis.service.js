@@ -115,9 +115,102 @@ export const getTransactionByInstrumentGraph = async (body) => {
     filteredTrade
   );
 
+  let equity = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+  let equityFutures = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+  let equityOptions = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+  let commodityOptions = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+  let commodityFutures = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+  tradeCountOnMarketBase.map((dayTrade) => {
+    let totalTradeCount = 0;
+    let totalProfitCount = 0;
+    let totalLossCount = 0;
+    dayTrade.markets.map((trade) => {
+      totalTradeCount += trade.count;
+      totalProfitCount += trade.ProfitCount;
+      totalLossCount += trade.LossCount;
+
+      // Accumulate totals for each market
+      switch (trade.name) {
+        case 'equity':
+          equity.count += trade.count;
+          equity.win += trade.ProfitCount;
+          equity.loss += trade.LossCount;
+          break;
+        case 'equityFutures':
+          equityFutures.count += trade.count;
+          equityFutures.win += trade.ProfitCount;
+          equityFutures.loss += trade.LossCount;
+          break;
+        case 'equityOptions':
+          equityOptions.count += trade.count;
+          equityOptions.win += trade.ProfitCount;
+          equityOptions.loss += trade.LossCount;
+          break;
+        case 'commodity':
+          commodityOptions.count += trade.count;
+          commodityOptions.win += trade.ProfitCount;
+          commodityOptions.loss += trade.LossCount;
+          break;
+        case 'commodityFutures':
+          commodityFutures.count += trade.count;
+          commodityFutures.win += trade.ProfitCount;
+          commodityFutures.loss += trade.LossCount;
+          break;
+      }
+    });
+
+    dayTrade.totalTradeCount = totalTradeCount;
+    dayTrade.Win = totalProfitCount;
+    dayTrade.Loss = totalLossCount;
+    dayTrade.WinRatio = (totalProfitCount / totalTradeCount) * 100;
+  });
+
+  // Calculate WinRatio for each market
+  equity.WinRatio = (equity.win / equity.count) * 100;
+  equityFutures.WinRatio = (equityFutures.win / equityFutures.count) * 100;
+  equityOptions.WinRatio = (equityOptions.win / equityOptions.count) * 100;
+  commodityOptions.WinRatio =
+    (commodityOptions.win / commodityOptions.count) * 100;
+  commodityFutures.WinRatio =
+    (commodityFutures.win / commodityFutures.count) * 100;
+
   return {
     code: HttpStatus.OK,
-    data: tradeCountOnMarketBase,
+    data: {
+      tradeCountOnMarketBase: tradeCountOnMarketBase,
+      totalTradeCount: {
+        equity: equity,
+        equityFutures: equityFutures,
+        equityOptions: equityOptions,
+        commodityOptions: commodityOptions,
+        commodityFutures: commodityFutures
+      }
+    },
     message: 'Trade counts retrieved successfully by date and market.'
   };
 };
@@ -196,9 +289,82 @@ export const profitAndLossGraph = async (body) => {
     filteredTrade
   );
 
+  let equityPl = {
+    profitAmount: 0,
+    lossAmount: 0
+  };
+  let equityFuturesPl = {
+    profitAmount: 0,
+    lossAmount: 0
+  };
+  let equityOptionsPl = {
+    profitAmount: 0,
+    lossAmount: 0
+  };
+  let commodityOptionsPl = {
+    profitAmount: 0,
+    lossAmount: 0
+  };
+  let commodityFuturesPl = {
+    profitAmount: 0,
+    lossAmount: 0
+  };
+
+  profitAndLossOfTrades.map((dayTrade) => {
+    console.log(dayTrade);
+    let totalProfitSumEachDay = 0;
+    let totalLossSumEachDay = 0;
+    dayTrade.markets.map((trade) => {
+      totalProfitSumEachDay += trade.totalProfit;
+      totalLossSumEachDay += trade.totalLoss;
+      // Use a switch statement to update individual market variables
+      switch (trade.name) {
+        case 'equity':
+          equityPl.profitAmount += trade.amountProfit;
+          equityPl.lossAmount += trade.amountLoss;
+          break;
+        case 'equityFutures':
+          equityFuturesPl.profitAmount += trade.amountProfit;
+          equityFuturesPl.lossAmount += trade.amountLoss;
+          break;
+        case 'equityOptions':
+          equityOptionsPl.profitAmount += trade.amountProfit;
+          equityOptionsPl.lossAmount += trade.amountLoss;
+          break;
+        case 'commodity':
+          commodityOptionsPl.profitAmount += trade.amountProfit;
+          commodityOptionsPl.lossAmount += trade.amountLoss;
+          break;
+        case 'commodityFutures':
+          commodityFuturesPl.profitAmount += trade.amountProfit;
+          commodityFuturesPl.lossAmount += trade.amountLoss;
+          break;
+        default:
+          console.warn(`Unknown market: ${trade.name}`);
+      }
+    });
+
+    dayTrade.total = {
+      totalProfit: totalProfitSumEachDay,
+      totalLoss: totalLossSumEachDay
+    };
+  });
+
+  // Add total profit and loss to the result object
+  const result = {
+    profitAndLossOfTrades,
+    marketSummaries: {
+      equity: equityPl,
+      equityFutures: equityFuturesPl,
+      equityOptions: equityOptionsPl,
+      commodityOptions: commodityOptionsPl,
+      commodityFutures: commodityFuturesPl
+    }
+  };
+
   return {
     code: HttpStatus.OK,
-    data: profitAndLossOfTrades,
+    data: result,
     message: 'Fetched Profit and Loss of trades for the latest 200 days'
   };
 };
@@ -297,3 +463,21 @@ async function getTradeProfitAndLossOnMarketBasedByDate(trades) {
 
   return profitLossByDate;
 }
+
+export const strategyGraph = async (body) => {
+  const trades = await getAllTradeOfUser(body);
+
+  const currentDate = new Date();
+  const tradeDuration = 200;
+  const filteredTrade = getLatestTrades(trades, currentDate, tradeDuration);
+
+  const strategyDataOfUser = await getAllStrategyData(filteredTrade);
+
+  return {
+    code: HttpStatus.OK,
+    data: strategyDataOfUser,
+    message: 'Strategy Date Fetched Successfull.'
+  };
+};
+
+async function getAllStrategyData(trades) {}

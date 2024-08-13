@@ -10,7 +10,11 @@ export const createTrade = async (tradeAccountId, body) => {
   try {
     const newTradeAccountId = mongoose.Types.ObjectId(tradeAccountId);
 
-    const updatedTradeDetail = { tradingAccountId: newTradeAccountId, ...body };
+    const { exit, ...tradeDetails } = body;
+    const updatedTradeDetail = {
+      tradingAccountId: newTradeAccountId,
+      ...tradeDetails
+    };
 
     // Create the trade
     const trade = new Trade(updatedTradeDetail);
@@ -20,6 +24,10 @@ export const createTrade = async (tradeAccountId, body) => {
     await TradingAccount.findByIdAndUpdate(newTradeAccountId, {
       $push: { trades: trade._id }
     });
+
+    // await trade.save();
+
+    await createExit(trade._id, exit);
 
     await trade.save();
 
@@ -36,6 +44,8 @@ export const createTrade = async (tradeAccountId, body) => {
     };
   }
 };
+
+export const updateTrade = async (tradeId) => {};
 
 export const getAllTrade = async (tradingAccountId, body) => {
   try {
@@ -259,7 +269,6 @@ export const createExit = async (tradeId, body) => {
 
     // Update the trade to include this exit
     trade.exit.push(exit._id);
-    await trade.save();
 
     return {
       code: HttpStatus.OK,

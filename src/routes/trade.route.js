@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('', userAuth, tradeController.groupTrade);
 router.post('/:tradingAccountId', userAuth, tradeController.createTrade);
 router.get('/user-trade', userAuth, tradeController.getAllTradeOfUser);
+router.put('/:tradeId', userAuth, tradeController.updateTrade);
 // router.get('/', userAuth, tradeController.getAllTradeOfUser);
 router.get('/getAllTradeGroup', userAuth, tradeController.getAllTradeGroup);
 router.get('/:tradingAccountId', userAuth, tradeController.getAllTrade);

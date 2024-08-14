@@ -23,12 +23,19 @@ export const getAllTradeOfUser = async (req, res) => {
 };
 
 export const createTrade = async (req, res) => {
-  console.log('------------------->>>>>>>>>>>>>In Controller');
-
   const data = await TradeService.createTrade(
     req.params.tradingAccountId,
     req.body
   );
+  res.status(data.code).json({
+    code: data.code,
+    data: data.data,
+    message: data.message
+  });
+};
+
+export const updateTrade = async (req, res) => {
+  const data = await TradeService.updateTrade(req.params.tradeId, req.body);
   res.status(data.code).json({
     code: data.code,
     data: data.data,

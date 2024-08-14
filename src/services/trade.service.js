@@ -45,7 +45,35 @@ export const createTrade = async (tradeAccountId, body) => {
   }
 };
 
-export const updateTrade = async (tradeId) => {};
+export const updateTrade = async (tradeId, updatedData) => {
+  try {
+    // Update the trade with new data
+    const updatedTrade = await Trade.findByIdAndUpdate(tradeId, updatedData, {
+      new: true, // Return the updated document
+      runValidators: true // Ensure validation is applied
+    });
+
+    if (!updatedTrade) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: [],
+        message: `Please check the trade id or trade body`
+      };
+    }
+
+    return {
+      code: HttpStatus.OK,
+      data: updatedTrade,
+      message: 'Trade Updated Successfull!'
+    };
+  } catch (error) {
+    return {
+      code: HttpStatus.INTERNAL_SERVER_ERROR,
+      data: [],
+      message: `Something went wrong :- ${error.message}`
+    };
+  }
+};
 
 export const getAllTrade = async (tradingAccountId, body) => {
   try {

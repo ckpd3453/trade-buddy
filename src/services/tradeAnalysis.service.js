@@ -480,4 +480,84 @@ export const strategyGraph = async (body) => {
   };
 };
 
-async function getAllStrategyData(trades) {}
+async function getAllStrategyData(trades) {
+  let strategyPerformanceData = [];
+
+  for (const trade of trades) {
+    const market = trade.market.toLowerCase();
+
+    let strategyObject = strategyPerformanceData.find(
+      (item) => item.strategy === trade.tradeStrategy
+    );
+
+    // If the strategy doesn't exist, create a new object
+    if (!strategyObject) {
+      strategyObject = {
+        strategy: trade.tradeStrategy,
+        markets: [
+          {
+            name: 'equity',
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          {
+            name: 'equityFutures',
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          {
+            name: 'equityOptions',
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          {
+            name: 'commodity',
+            amountProfit: 0,
+            amountLoss: 0
+          },
+          {
+            name: 'commodityFutures',
+            amountProfit: 0,
+            amountLoss: 0
+          }
+        ]
+      };
+      strategyPerformanceData.push(strategyObject);
+    }
+
+    const marketData = strategyObject.markets.find(
+      (item) => item.name === market
+    );
+
+    // Get trade analysis and calculate profit/loss
+    const tradeAnalysis = await getAllTradeAnalysis(trade._id);
+    const exitTrade = await exitModel.findById(trade.exit);
+
+    let totalAmountProfit = 0;
+    let totalAmountLoss = 0;
+
+    if (tradeAnalysis.data.exitAnalyses.length > 0) {
+      tradeAnalysis.data.exitAnalyses.forEach((exitAnalysis) => {
+        console.log(exitAnalysis.lossClosedPosition);
+
+        const profitLoss =
+          exitAnalysis.profitClosedPosition -
+          Math.abs(exitAnalysis.lossClosedPosition);
+
+        if (profitLoss > 0) {
+          totalAmountProfit += profitLoss * exitTrade.quantity;
+        } else {
+          totalAmountLoss += Math.abs(profitLoss * exitTrade.quantity);
+        }
+      });
+    }
+
+    // Update the market data within the strategy object
+    if (marketData) {
+      marketData.amountProfit += totalAmountProfit;
+      marketData.amountLoss += totalAmountLoss;
+    }
+  }
+
+  return strategyPerformanceData;
+}

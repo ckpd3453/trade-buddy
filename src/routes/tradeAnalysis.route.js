@@ -13,4 +13,10 @@ router.get('/:_id', userAuth, tradeAnalysis.getTradeAnalysis);
 
 router.get('/instrument_graph/p&l', userAuth, tradeAnalysis.profitAndLossGraph);
 
+router.get(
+  '/strategy_graph/p&l',
+  userAuth,
+  tradeAnalysis.strategyPerformanceGraph
+);
+
 export default router;

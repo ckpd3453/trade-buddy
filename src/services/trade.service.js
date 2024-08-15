@@ -45,8 +45,31 @@ export const createTrade = async (tradeAccountId, body) => {
   }
 };
 
-export const updateTrade = async (tradeId, updatedData) => {
+export const updateTrade = async (tradeId, body) => {
   try {
+    const { exit, ...updatedData } = body;
+
+    if (exit) {
+      const { _id, ...exitBody } = exit;
+
+      if (_id) {
+        const updatedExit = await Exit.findByIdAndUpdate(_id, exitBody, {
+          new: true,
+          runValidators: true
+        });
+
+        if (!updatedExit) {
+          return {
+            code: HttpStatus.BAD_REQUEST,
+            data: [],
+            message: `Please check the exit id or exit body`
+          };
+        }
+      } else {
+        await createExit(tradeId, exitBody);
+      }
+    }
+
     // Update the trade with new data
     const updatedTrade = await Trade.findByIdAndUpdate(tradeId, updatedData, {
       new: true, // Return the updated document

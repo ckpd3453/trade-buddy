@@ -520,7 +520,11 @@ async function getAllStrategyData(trades) {
             amountProfit: 0,
             amountLoss: 0
           }
-        ]
+        ],
+        count: {
+          profit: 0,
+          loss: 0
+        }
       };
       strategyPerformanceData.push(strategyObject);
     }
@@ -538,16 +542,18 @@ async function getAllStrategyData(trades) {
 
     if (tradeAnalysis.data.exitAnalyses.length > 0) {
       tradeAnalysis.data.exitAnalyses.forEach((exitAnalysis) => {
-        console.log(exitAnalysis.lossClosedPosition);
-
         const profitLoss =
           exitAnalysis.profitClosedPosition -
           Math.abs(exitAnalysis.lossClosedPosition);
 
-        if (profitLoss > 0) {
+        console.log(exitAnalysis);
+
+        if (exitAnalysis.resultClosedPosition === 'Profit') {
           totalAmountProfit += profitLoss * exitTrade.quantity;
-        } else {
+          strategyObject.count.profit += 1; // Increment profit count
+        } else if (exitAnalysis.resultClosedPosition === 'Loss') {
           totalAmountLoss += Math.abs(profitLoss * exitTrade.quantity);
+          strategyObject.count.loss += 1; // Increment loss count
         }
       });
     }

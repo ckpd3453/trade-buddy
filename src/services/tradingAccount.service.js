@@ -35,7 +35,8 @@ export const getAllTradingAccountList = async (body) => {
   })
     .populate('userId')
     .populate('trades')
-    .populate('accountName');
+    .populate('accountName')
+    .populate('exit');
 
   return {
     code: HttpStatus.OK,

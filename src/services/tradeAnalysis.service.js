@@ -111,7 +111,7 @@ export const getTransactionByInstrumentGraph = async (body) => {
   const currentDate = new Date();
   const tradeDuration = 200;
   const filteredTrade = getLatestTrades(trades, currentDate, tradeDuration);
-  const tradeCountOnMarketBase = await getTradeCountOnMarketBasedByDate(
+  const tradeCountOninstrumentBase = await getTradeCountOnInstrumentBasedByDate(
     filteredTrade
   );
 
@@ -145,38 +145,39 @@ export const getTransactionByInstrumentGraph = async (body) => {
     loss: 0,
     WinRatio: 0
   };
-  tradeCountOnMarketBase.map((dayTrade) => {
+  tradeCountOninstrumentBase.map((dayTrade) => {
     let totalTradeCount = 0;
     let totalProfitCount = 0;
     let totalLossCount = 0;
-    dayTrade.markets.map((trade) => {
+    dayTrade.instruments.map((trade) => {
       totalTradeCount += trade.count;
       totalProfitCount += trade.ProfitCount;
       totalLossCount += trade.LossCount;
 
-      // Accumulate totals for each market
-      switch (trade.name) {
+      let tradeName = trade.name.toLowerCase();
+      // Accumulate totals for each instrument
+      switch (tradeName) {
         case 'equity':
           equity.count += trade.count;
           equity.win += trade.ProfitCount;
           equity.loss += trade.LossCount;
           break;
-        case 'equityFutures':
+        case 'equityfutures':
           equityFutures.count += trade.count;
           equityFutures.win += trade.ProfitCount;
           equityFutures.loss += trade.LossCount;
           break;
-        case 'equityOptions':
+        case 'equityoptions':
           equityOptions.count += trade.count;
           equityOptions.win += trade.ProfitCount;
           equityOptions.loss += trade.LossCount;
           break;
-        case 'commodity':
+        case 'commodityoptions':
           commodityOptions.count += trade.count;
           commodityOptions.win += trade.ProfitCount;
           commodityOptions.loss += trade.LossCount;
           break;
-        case 'commodityFutures':
+        case 'commodityfutures':
           commodityFutures.count += trade.count;
           commodityFutures.win += trade.ProfitCount;
           commodityFutures.loss += trade.LossCount;
@@ -190,7 +191,7 @@ export const getTransactionByInstrumentGraph = async (body) => {
     dayTrade.WinRatio = (totalProfitCount / totalTradeCount) * 100;
   });
 
-  // Calculate WinRatio for each market
+  // Calculate WinRatio for each instrument
   equity.WinRatio = (equity.win / equity.count) * 100;
   equityFutures.WinRatio = (equityFutures.win / equityFutures.count) * 100;
   equityOptions.WinRatio = (equityOptions.win / equityOptions.count) * 100;
@@ -202,7 +203,7 @@ export const getTransactionByInstrumentGraph = async (body) => {
   return {
     code: HttpStatus.OK,
     data: {
-      tradeCountOnMarketBase: tradeCountOnMarketBase,
+      tradeCountOninstrumentBase: tradeCountOninstrumentBase,
       totalTradeCount: {
         equity: equity,
         equityFutures: equityFutures,
@@ -211,7 +212,7 @@ export const getTransactionByInstrumentGraph = async (body) => {
         commodityFutures: commodityFutures
       }
     },
-    message: 'Trade counts retrieved successfully by date and market.'
+    message: 'Trade counts retrieved successfully by date and instrument.'
   };
 };
 
@@ -224,58 +225,77 @@ function getLatestTrades(trades, currentDate, tradeDuration) {
   });
 }
 
-async function getTradeCountOnMarketBasedByDate(trades) {
-  let tradeCountByDateAndMarket = [];
+async function getTradeCountOnInstrumentBasedByDate(trades) {
+  let tradeCountByDateAndInstrument = [];
 
   for (const trade of trades) {
-    const market = trade.market.toLowerCase();
+    const instrument = trade.instrument.toLowerCase();
     const entryDate = moment(trade.entryDate).format('YYYY-MM-DD');
 
     // Find the date object in the array
-    let dateObject = tradeCountByDateAndMarket.find(
+    let dateObject = tradeCountByDateAndInstrument.find(
       (item) => item.date === entryDate
     );
 
-    // If the date doesn't exist, create a new object
+    // If the date doesn't exist, create a new object with dynamic instruments
     if (!dateObject) {
+      // Get unique instruments from trades on this date
+      const uniqueInstruments = [
+        ...new Set(
+          trades
+            .filter(
+              (t) => moment(t.entryDate).format('YYYY-MM-DD') === entryDate
+            )
+            .map((t) => t.instrument.toLowerCase())
+        )
+      ];
+
+      // Create the instruments array based on unique instruments
+      const instrumentsArray = uniqueInstruments.map((inst) => ({
+        name: inst,
+        count: 0,
+        ProfitCount: 0,
+        LossCount: 0
+      }));
+
       dateObject = {
         date: entryDate,
-        markets: [
-          { name: 'equity', count: 0, ProfitCount: 0, LossCount: 0 },
-          { name: 'equityFutures', count: 0, ProfitCount: 0, LossCount: 0 },
-          { name: 'equityOptions', count: 0, ProfitCount: 0, LossCount: 0 },
-          { name: 'commodity', count: 0, ProfitCount: 0, LossCount: 0 },
-          { name: 'commodityFutures', count: 0, ProfitCount: 0, LossCount: 0 }
-        ]
+        instruments: instrumentsArray
       };
-      tradeCountByDateAndMarket.push(dateObject);
+      tradeCountByDateAndInstrument.push(dateObject);
     }
 
-    // Find the market object in the markets array
-    const marketData = dateObject.markets.find((item) => item.name === market);
+    // Find the instrument object in the instruments array
+    const instrumentData = dateObject.instruments.find(
+      (item) => item.name === instrument
+    );
 
     // Get trade analysis and calculate profit/loss
     const tradeAnalysis = await getAllTradeAnalysis(trade._id);
     let totalProfitLoss = 0;
+    console.log(tradeAnalysis.data);
+
     if (tradeAnalysis.data.exitAnalyses.length > 0) {
       tradeAnalysis.data.exitAnalyses.forEach((exitAnalysis) => {
         totalProfitLoss +=
-          exitAnalysis.profitClosedPosition + exitAnalysis.lossClosedPosition;
+          exitAnalysis.profitClosedPosition +
+          exitAnalysis.lossClosedPosition +
+          exitAnalysis.profitAndLossOpenPosition;
       });
     }
 
-    // Update the market data within the date object
-    if (marketData) {
-      marketData.count += 1;
+    // Update the instrument data within the date object
+    if (instrumentData) {
+      instrumentData.count += 1;
       if (totalProfitLoss > 0) {
-        marketData.ProfitCount += 1;
+        instrumentData.ProfitCount += 1;
       } else {
-        marketData.LossCount += 1;
+        instrumentData.LossCount += 1;
       }
     }
   }
 
-  return tradeCountByDateAndMarket;
+  return tradeCountByDateAndInstrument;
 }
 
 export const profitAndLossGraph = async (body) => {
@@ -285,9 +305,8 @@ export const profitAndLossGraph = async (body) => {
   const tradeDuration = 200;
   const filteredTrade = getLatestTrades(trades, currentDate, tradeDuration);
 
-  const profitAndLossOfTrades = await getTradeProfitAndLossOnMarketBasedByDate(
-    filteredTrade
-  );
+  const profitAndLossOfTrades =
+    await getTradeProfitAndLossOnInstrumentBasedByDate(filteredTrade);
 
   let equityPl = {
     profitAmount: 0,
@@ -314,33 +333,33 @@ export const profitAndLossGraph = async (body) => {
     console.log(dayTrade);
     let totalProfitSumEachDay = 0;
     let totalLossSumEachDay = 0;
-    dayTrade.markets.map((trade) => {
+    dayTrade.instruments.map((trade) => {
       totalProfitSumEachDay += trade.totalProfit;
       totalLossSumEachDay += trade.totalLoss;
-      // Use a switch statement to update individual market variables
+      // Use a switch statement to update individual instrument variables
       switch (trade.name) {
         case 'equity':
           equityPl.profitAmount += trade.amountProfit;
           equityPl.lossAmount += trade.amountLoss;
           break;
-        case 'equityFutures':
+        case 'equityfutures':
           equityFuturesPl.profitAmount += trade.amountProfit;
           equityFuturesPl.lossAmount += trade.amountLoss;
           break;
-        case 'equityOptions':
+        case 'equityoptions':
           equityOptionsPl.profitAmount += trade.amountProfit;
           equityOptionsPl.lossAmount += trade.amountLoss;
           break;
-        case 'commodity':
+        case 'commodityoptions':
           commodityOptionsPl.profitAmount += trade.amountProfit;
           commodityOptionsPl.lossAmount += trade.amountLoss;
           break;
-        case 'commodityFutures':
+        case 'commodityfutures':
           commodityFuturesPl.profitAmount += trade.amountProfit;
           commodityFuturesPl.lossAmount += trade.amountLoss;
           break;
         default:
-          console.warn(`Unknown market: ${trade.name}`);
+          console.warn(`Unknown instrument: ${trade.name}`);
       }
     });
 
@@ -353,7 +372,7 @@ export const profitAndLossGraph = async (body) => {
   // Add total profit and loss to the result object
   const result = {
     profitAndLossOfTrades,
-    marketSummaries: {
+    instrumentSummaries: {
       equity: equityPl,
       equityFutures: equityFuturesPl,
       equityOptions: equityOptionsPl,
@@ -369,63 +388,39 @@ export const profitAndLossGraph = async (body) => {
   };
 };
 
-async function getTradeProfitAndLossOnMarketBasedByDate(trades) {
+async function getTradeProfitAndLossOnInstrumentBasedByDate(trades) {
   let profitLossByDate = [];
 
   for (const trade of trades) {
-    const market = trade.market.toLowerCase();
+    const instrument = trade.instrument.toLowerCase();
     const entryDate = moment(trade.entryDate).format('YYYY-MM-DD');
 
-    // Find the date object in the array
+    // Find or create the date object in the array
     let dateObject = profitLossByDate.find((item) => item.date === entryDate);
 
-    // If the date doesn't exist, create a new object
     if (!dateObject) {
       dateObject = {
         date: entryDate,
-        markets: [
-          {
-            name: 'equity',
-            totalProfit: 0,
-            totalLoss: 0,
-            amountProfit: 0,
-            amountLoss: 0
-          },
-          {
-            name: 'equityFutures',
-            totalProfit: 0,
-            totalLoss: 0,
-            amountProfit: 0,
-            amountLoss: 0
-          },
-          {
-            name: 'equityOptions',
-            totalProfit: 0,
-            totalLoss: 0,
-            amountProfit: 0,
-            amountLoss: 0
-          },
-          {
-            name: 'commodity',
-            totalProfit: 0,
-            totalLoss: 0,
-            amountProfit: 0,
-            amountLoss: 0
-          },
-          {
-            name: 'commodityFutures',
-            totalProfit: 0,
-            totalLoss: 0,
-            amountProfit: 0,
-            amountLoss: 0
-          }
-        ]
+        instruments: []
       };
       profitLossByDate.push(dateObject);
     }
 
-    // Find the market object in the markets array
-    const marketData = dateObject.markets.find((item) => item.name === market);
+    // Find or create the instrument object within the date object
+    let instrumentData = dateObject.instruments.find(
+      (item) => item.name === instrument
+    );
+
+    if (!instrumentData) {
+      instrumentData = {
+        name: instrument,
+        totalProfit: 0,
+        totalLoss: 0,
+        amountProfit: 0,
+        amountLoss: 0
+      };
+      dateObject.instruments.push(instrumentData);
+    }
 
     // Get trade analysis and calculate profit/loss
     const tradeAnalysis = await getAllTradeAnalysis(trade._id);
@@ -435,10 +430,14 @@ async function getTradeProfitAndLossOnMarketBasedByDate(trades) {
     let totalAmountProfit = 0;
     let totalAmountLoss = 0;
 
+    console.log(tradeAnalysis.data.exitAnalyses);
+
     if (tradeAnalysis.data.exitAnalyses.length > 0) {
       tradeAnalysis.data.exitAnalyses.forEach((exitAnalysis) => {
         const profitLoss =
-          exitAnalysis.profitClosedPosition + exitAnalysis.lossClosedPosition;
+          exitAnalysis.profitClosedPosition +
+          exitAnalysis.lossClosedPosition +
+          exitAnalysis.profitAndLossOpenPosition;
         totalProfitLoss += profitLoss;
 
         if (profitLoss >= 0) {
@@ -449,15 +448,13 @@ async function getTradeProfitAndLossOnMarketBasedByDate(trades) {
       });
     }
 
-    // Update the market data within the date object
-    if (marketData) {
-      if (totalProfitLoss > 0) {
-        marketData.totalProfit += totalProfitLoss;
-        marketData.amountProfit += totalAmountProfit;
-      } else {
-        marketData.totalLoss += Math.abs(totalProfitLoss);
-        marketData.amountLoss += totalAmountLoss;
-      }
+    // Update the instrument data within the date object
+    if (totalProfitLoss > 0) {
+      instrumentData.totalProfit += totalProfitLoss;
+      instrumentData.amountProfit += totalAmountProfit;
+    } else {
+      instrumentData.totalLoss += Math.abs(totalProfitLoss);
+      instrumentData.amountLoss += totalAmountLoss;
     }
   }
 
@@ -484,7 +481,7 @@ async function getAllStrategyData(trades) {
   let strategyPerformanceData = [];
 
   for (const trade of trades) {
-    const market = trade.market.toLowerCase();
+    const instrument = trade.instrument.toLowerCase();
 
     let strategyObject = strategyPerformanceData.find(
       (item) => item.strategy === trade.tradeStrategy
@@ -494,29 +491,29 @@ async function getAllStrategyData(trades) {
     if (!strategyObject) {
       strategyObject = {
         strategy: trade.tradeStrategy,
-        markets: [
+        instruments: [
           {
             name: 'equity',
             amountProfit: 0,
             amountLoss: 0
           },
           {
-            name: 'equityFutures',
+            name: 'equityfutures',
             amountProfit: 0,
             amountLoss: 0
           },
           {
-            name: 'equityOptions',
+            name: 'equityoptions',
             amountProfit: 0,
             amountLoss: 0
           },
           {
-            name: 'commodity',
+            name: 'commodityoptions',
             amountProfit: 0,
             amountLoss: 0
           },
           {
-            name: 'commodityFutures',
+            name: 'commodityfutures',
             amountProfit: 0,
             amountLoss: 0
           }
@@ -529,9 +526,9 @@ async function getAllStrategyData(trades) {
       strategyPerformanceData.push(strategyObject);
     }
 
-    const marketData = strategyObject.markets.find(
-      (item) => item.name === market
-    );
+    const instrumentData = strategyObject.instruments.find((item) => {
+      return item.name === instrument;
+    });
 
     // Get trade analysis and calculate profit/loss
     const tradeAnalysis = await getAllTradeAnalysis(trade._id);
@@ -544,24 +541,32 @@ async function getAllStrategyData(trades) {
       tradeAnalysis.data.exitAnalyses.forEach((exitAnalysis) => {
         const profitLoss =
           exitAnalysis.profitClosedPosition -
-          Math.abs(exitAnalysis.lossClosedPosition);
+          Math.abs(exitAnalysis.lossClosedPosition) +
+          exitAnalysis.profitAndLossOpenPosition;
 
-        console.log(exitAnalysis);
-
+        // Check the result of the closed position and update counts
         if (exitAnalysis.resultClosedPosition === 'Profit') {
           totalAmountProfit += profitLoss * exitTrade.quantity;
           strategyObject.count.profit += 1; // Increment profit count
         } else if (exitAnalysis.resultClosedPosition === 'Loss') {
           totalAmountLoss += Math.abs(profitLoss * exitTrade.quantity);
           strategyObject.count.loss += 1; // Increment loss count
+        } else if (exitAnalysis.position === 'Open') {
+          if (profitLoss > 0) {
+            totalAmountProfit += profitLoss * exitTrade.quantity;
+            strategyObject.count.profit += 1;
+          } else {
+            totalAmountLoss += Math.abs(profitLoss * exitTrade.quantity);
+            strategyObject.count.loss += 1;
+          }
         }
       });
     }
 
-    // Update the market data within the strategy object
-    if (marketData) {
-      marketData.amountProfit += totalAmountProfit;
-      marketData.amountLoss += totalAmountLoss;
+    // Update the instrument data within the strategy object
+    if (instrumentData) {
+      instrumentData.amountProfit += totalAmountProfit;
+      instrumentData.amountLoss += totalAmountLoss;
     }
   }
 

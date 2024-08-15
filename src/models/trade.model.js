@@ -13,6 +13,9 @@ const tradeModel = new Schema({
   market: {
     type: String
   },
+  instrument: {
+    type: String
+  },
   account: { type: String },
   exchange: { type: String },
   brokerName: { type: String },

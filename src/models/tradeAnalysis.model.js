@@ -17,7 +17,7 @@ const tradeAnalysisSchema = new mongoose.Schema({
   },
   resultClosedPosition: {
     type: String,
-    enum: ['Profit', 'Loss']
+    enum: ['Profit', 'Loss', null]
   },
   profitClosedPosition: {
     type: Number,

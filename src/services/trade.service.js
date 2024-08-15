@@ -10,6 +10,18 @@ export const createTrade = async (tradeAccountId, body) => {
   try {
     const newTradeAccountId = mongoose.Types.ObjectId(tradeAccountId);
 
+    // Check if the trading account exists
+    const tradingAccountExists = await TradingAccount.findById(
+      newTradeAccountId
+    );
+    if (!tradingAccountExists) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: [],
+        message:
+          'Trading Account does not exist. Please provide a valid trading account ID.'
+      };
+    }
     const { exit, ...tradeDetails } = body;
     const updatedTradeDetail = {
       tradingAccountId: newTradeAccountId,
@@ -27,8 +39,11 @@ export const createTrade = async (tradeAccountId, body) => {
 
     // await trade.save();
 
-    await createExit(trade._id, exit);
+    const exitData = await createExit(trade._id, exit);
 
+    console.log('In Created Trade: -', exitData.data._id);
+
+    trade.exit.push(exitData.data._id);
     await trade.save();
 
     return {
@@ -318,9 +333,11 @@ export const createExit = async (tradeId, body) => {
     exit.tradeAnalysis.push(tradeAnalysis._id);
     await exit.save();
 
-    // Update the trade to include this exit
-    trade.exit.push(exit._id);
+    // console.log('In exit trade :- ', trade);
 
+    // // Update the trade to include this exit
+    trade.exit.push(exit._id);
+    // await trade.save();
     return {
       code: HttpStatus.OK,
       data: exit,

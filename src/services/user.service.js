@@ -91,6 +91,8 @@ export const signIn = async (userCredential) => {
 
 export const updateProfile = async (updateBody) => {
   try {
+    console.log(updateBody);
+
     const user = await User.findById(updateBody.userId);
 
     if (!user) {
@@ -180,8 +182,9 @@ export const forgetPassword = async (body) => {
         message: 'Pease register your email id.'
       };
     } else {
-      const token = await userUtils.getToken(user);
-      userUtils.sendVerificationMail(body.email, token);
+      // const token = await userUtils.getToken(user);
+      userUtils.sendResetPasswordMail(body.email, user._id);
+
       return {
         code: HttpStatus.OK,
         data: `Link Sent`,
@@ -199,8 +202,8 @@ export const forgetPassword = async (body) => {
 
 export const resetPassword = async (body) => {
   try {
-    if (body.password !== null) {
-      const updatePassword = await updateProfile(body.userId, body);
+    if (body.password != null) {
+      const updatePassword = await updateProfile(body);
 
       return {
         code: HttpStatus.OK,

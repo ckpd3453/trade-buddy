@@ -28,30 +28,49 @@ export const getToken = async (user) => {
   return token;
 };
 
-export const sendVerificationMail = (email, token) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL,
-      pass: process.env.PASSWORD
-    }
-  });
-  const mailConfigurations = {
-    from: 'chandrakantprasad573@gmail.com',
+export const sendResetPasswordMail = async (email, userId) => {
+  try {
+    // Generate a JWT token
+    const token = jwt.sign({ id: userId }, process.env.TOKEN_KEY, {
+      expiresIn: '1h'
+    });
 
-    to: email,
+    console.log(token);
 
-    subject: 'For Email Verification',
+    const resetLink = `http://localhost:5000/reset?token=${token}`;
 
-    text: `Hi! There, You have recently visited our website and entered your email.
-   
-             Requested OTP : - ${token} 
-         
-             Thanks`
-  };
+    const base64EncodedLink = Buffer.from(resetLink).toString('base64');
+    console.log('ResetLink: ' + base64EncodedLink);
 
-  transporter.sendMail(mailConfigurations, function (error, info) {
-    if (error) throw Error(error);
-    console.log('Email Sent Successfully to', info.envelope.to[0]);
-  });
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD
+      }
+    });
+
+    const mailConfigurations = {
+      from: 'tradebuddyteam@gmail.com',
+      to: email,
+      subject: 'Reset Your Password',
+      html: `
+      <h2>Password Reset</h2>
+      <p>Hi! There, You have requested to reset your password.</p>
+      <p>Please click on the link below to reset your password:</p>
+      <a href="${resetLink}" style="display:inline-block;padding:10px 20px;color:#fff;background-color:#007bff;text-decoration:none;border-radius:5px;">Click Me</a>
+      <p>If you didn't request this, please ignore this email.</p>
+      <p>Thanks,</p>
+      <p>TradeBuddy Team</p>
+    `
+    };
+
+    const info = await transporter.sendMail(mailConfigurations);
+    console.log(
+      'Reset password email sent successfully to',
+      info.envelope.to[0]
+    );
+  } catch (error) {
+    console.error('Error sending reset password email:', error.message);
+  }
 };

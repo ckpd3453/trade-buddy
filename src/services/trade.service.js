@@ -115,9 +115,9 @@ export const updateTrade = async (tradeId, body) => {
 
 export const getAllTrade = async (tradingAccountId, body) => {
   try {
-    const tradingAccount = await TradingAccount.findById(
-      tradingAccountId
-    ).populate('trades');
+    const tradingAccount = await TradingAccount.findById(tradingAccountId)
+      .populate('trades')
+      .populate('exit');
 
     if (!tradingAccount) {
       return {
@@ -147,7 +147,9 @@ export const getAllTradeOfUser = async (body) => {
 
     const tradingAccount = await TradingAccount.find({
       userId: body.userId
-    }).populate('trades');
+    })
+      .populate('trades')
+      .populate('exit');
 
     var allTradesOfUser = [];
     tradingAccount.map((account) => {
@@ -357,7 +359,9 @@ export const getAllTradeGroup = async (body) => {
   try {
     const groupTrades = await GroupTrade.find({
       userId: body.userId
-    }).populate('trades');
+    })
+      .populate('trades')
+      .populate('exit');
 
     return {
       code: HttpStatus.OK,

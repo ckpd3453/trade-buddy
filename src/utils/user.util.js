@@ -37,7 +37,7 @@ export const sendResetPasswordMail = async (email, userId) => {
 
     console.log(token);
 
-    const resetLink = `http://localhost:5000/reset?token=${token}`;
+    const resetLink = `http://localhost:3000/reset?token=${token}`;
 
     const base64EncodedLink = Buffer.from(resetLink).toString('base64');
     console.log('ResetLink: ' + base64EncodedLink);

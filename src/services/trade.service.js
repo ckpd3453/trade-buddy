@@ -5,6 +5,7 @@ import HttpStatus from 'http-status-codes';
 import mongoose from 'mongoose';
 import Exit from '../models/exit.model';
 import tradeAnalysisModel from '../models/tradeAnalysis.model';
+import User from '../models/user.model';
 
 export const createTrade = async (tradeAccountId, body) => {
   try {
@@ -62,8 +63,9 @@ export const createTrade = async (tradeAccountId, body) => {
 
 export const updateTrade = async (tradeId, body) => {
   try {
-    const { exit, ...updatedData } = body;
+    const { exit, userId, ...updatedData } = body;
 
+    // Handle Exit updates or creation
     if (exit) {
       const { exitId, ...exitBody } = exit;
 
@@ -82,10 +84,13 @@ export const updateTrade = async (tradeId, body) => {
         }
       } else {
         let exitedTrade = await createExit(tradeId, exitBody);
+        if (exitedTrade.code !== HttpStatus.OK) {
+          return exitedTrade;
+        }
       }
     }
 
-    // Update the trade with new data
+    // Update the Trade with new data
     const updatedTrade = await Trade.findByIdAndUpdate(tradeId, updatedData, {
       new: true, // Return the updated document
       runValidators: true // Ensure validation is applied
@@ -99,16 +104,54 @@ export const updateTrade = async (tradeId, body) => {
       };
     }
 
+    let tradingAccountId = updatedTrade.tradingAccountId;
+    // Update TradingAccount if related fields were provided
+    if (tradingAccountId) {
+      const updatedTradingAccount = await TradingAccount.findByIdAndUpdate(
+        tradingAccountId,
+        { $addToSet: { trades: tradeId } }, // Ensure trade is linked to account
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedTradingAccount) {
+        return {
+          code: HttpStatus.BAD_REQUEST,
+          data: [],
+          message: `TradingAccount update failed`
+        };
+      }
+    }
+
+    // Update User if related fields were provided
+    if (body.userId) {
+      const user = await User.findById(userId);
+      console.log(user);
+
+      const updatedUser = await User.findByIdAndUpdate(
+        body.userId,
+        { $addToSet: { accountName: tradingAccountId } }, // Ensure account is linked to user
+        { new: true, runValidators: true }
+      );
+
+      if (!updatedUser) {
+        return {
+          code: HttpStatus.BAD_REQUEST,
+          data: [],
+          message: `User update failed`
+        };
+      }
+    }
+
     return {
       code: HttpStatus.OK,
       data: updatedTrade,
-      message: 'Trade Updated Successfull!'
+      message: 'Trade, Exit, TradingAccount, and User updated successfully!'
     };
   } catch (error) {
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
-      message: `Something went wrong :- ${error.message}`
+      message: `Something went wrong: ${error.message}`
     };
   }
 };

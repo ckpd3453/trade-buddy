@@ -65,10 +65,10 @@ export const updateTrade = async (tradeId, body) => {
     const { exit, ...updatedData } = body;
 
     if (exit) {
-      const { _id, ...exitBody } = exit;
+      const { exitId, ...exitBody } = exit;
 
-      if (_id) {
-        const updatedExit = await Exit.findByIdAndUpdate(_id, exitBody, {
+      if (exitId) {
+        const updatedExit = await Exit.findByIdAndUpdate(exitId, exitBody, {
           new: true,
           runValidators: true
         });
@@ -406,9 +406,6 @@ export const updateGroupTrade = async (groupId, tradeId) => {
 
     // Update the group trade in the database
     await GroupTrade.updateOne({ _id: groupId }, { trades: groupTrade.trades });
-
-    // Log the updated group trade
-    console.log('Updated group trade:', groupTrade);
 
     // Return a success response
     return {

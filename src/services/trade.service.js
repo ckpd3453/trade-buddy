@@ -81,7 +81,7 @@ export const updateTrade = async (tradeId, body) => {
           };
         }
       } else {
-        await createExit(tradeId, exitBody);
+        let exitedTrade = await createExit(tradeId, exitBody);
       }
     }
 
@@ -261,6 +261,7 @@ export const createExit = async (tradeId, body) => {
 
     // Calculate the total quantity of existing exits
     const existingExits = await Exit.find({ tradeId });
+
     const totalExitQuantity = existingExits.reduce(
       (sum, exit) => sum + exit.quantity,
       0
@@ -281,7 +282,6 @@ export const createExit = async (tradeId, body) => {
       tradeId,
       ...body
     });
-    await exit.save();
 
     // Calculate trade analysis for the new exit
     const position =
@@ -339,16 +339,17 @@ export const createExit = async (tradeId, body) => {
       investment: investment,
       roi: roi
     });
-    await tradeAnalysis.save();
 
     // Update the exit document to include the tradeAnalysis reference
     exit.tradeAnalysis.push(tradeAnalysis._id);
     await exit.save();
-
     // console.log('In exit trade :- ', trade);
 
     // // Update the trade to include this exit
     trade.exit.push(exit._id);
+
+    await trade.save();
+
     // await trade.save();
     return {
       code: HttpStatus.OK,

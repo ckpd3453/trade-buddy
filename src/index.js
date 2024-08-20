@@ -24,7 +24,7 @@ const app = express();
 const port = process.env.APP_PORT || 3000;
 const api_version = process.env.API_VERSION || 'v1';
 
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(helmet());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

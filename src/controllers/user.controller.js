@@ -57,8 +57,8 @@ export const updateProfile = async (req, res) => {
  * @param {*} req
  * @param {*} res
  */
-export const getAllAccount = async (req, res) => {
-  const data = await UserService.getAllAccount();
+export const getUserAccount = async (req, res) => {
+  const data = await UserService.getUserAccount(req.body.userId);
   res.status(data.code).json({
     code: data.code,
     data: data.data,

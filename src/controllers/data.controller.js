@@ -26,3 +26,12 @@ export const getAllTimeZone = async (req, res) => {
     message: data.message
   });
 };
+
+export const getAllAsset = async (req, res) => {
+  const data = await dataService.getAllAsset();
+  res.status(data.code).json({
+    code: data.code,
+    data: data.data,
+    message: data.message
+  });
+};

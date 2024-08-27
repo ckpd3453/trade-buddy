@@ -19,6 +19,7 @@ const upload = multer({ storage });
 
 router.post('/upload', upload.single('file'), dataController.uploadCSVData);
 
+router.get('/', dataController.getAllAsset);
 router.get('/:collectionName', dataController.getAllTimeZone);
 
 export default router;

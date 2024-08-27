@@ -1,6 +1,7 @@
 const getModel = require('../models/data.model');
 import HttpStatus from 'http-status-codes';
 import { cleanup, parseCSV } from '../utils/data.util';
+import Asset from '../models/assetMaster';
 
 export const uploadCSVData = async (filePath) => {
   try {
@@ -41,6 +42,25 @@ export const uploadCSVData = async (filePath) => {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
       message: 'Something Went Wrong'
+    };
+  }
+};
+
+export const getAllAsset = async () => {
+  try {
+    const data = await Asset.find();
+
+    return {
+      code: HttpStatus.OK,
+      data: data,
+      message: 'Assets fetched successful'
+    };
+  } catch (err) {
+    return {
+      code: HttpStatus.EXPECTATION_FAILED,
+      data: null,
+      message: `Something went wrong take refernce from error message below:
+                  ${err}`
     };
   }
 };

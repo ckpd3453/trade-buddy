@@ -219,9 +219,11 @@ export const updateProfile = async (updateBody) => {
   }
 };
 
-export const getAllAccount = async () => {
+export const getUserAccount = async (userId) => {
   try {
-    const userAccounts = await User.find()
+    console.log(userId);
+
+    const userAccounts = await User.findById(userId)
       .select('-password')
       .populate({
         path: 'accountName'

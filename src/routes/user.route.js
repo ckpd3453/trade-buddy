@@ -16,7 +16,7 @@ router.post('/signIn', userController.signIn);
 router.put('/', userAuth, userController.updateProfile);
 
 //Get-All-User-Accounts
-router.get('/', userAuth, userController.getAllAccount);
+router.get('/', userAuth, userController.getUserAccount);
 
 //Forgot Password
 router.post('/forget', userController.forgetPassword);

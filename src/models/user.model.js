@@ -18,6 +18,22 @@ const userSchema = new Schema({
   },
   phoneNumber: {
     type: String
+  },
+  timeZone: {
+    type: String,
+    default: ''
+  },
+  dateFormat: {
+    type: String,
+    default: ''
+  },
+  timeFormat: {
+    type: String,
+    default: ''
+  },
+  currency: {
+    type: String,
+    default: ''
   }
 });
 

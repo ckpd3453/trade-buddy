@@ -9,7 +9,7 @@ const exitModel = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'TradingAccount',
     required: true
-  },
+  }, // need to remove
   tradeId: {
     type: Schema.Types.ObjectId,
     ref: 'Trade',

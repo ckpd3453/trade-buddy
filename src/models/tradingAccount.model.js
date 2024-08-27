@@ -8,7 +8,10 @@ const tradingAccount = new Schema({
     required: true
   },
   account: { type: String },
-  trades: [{ type: Schema.Types.ObjectId, ref: 'Trade' }]
+  trades: [{ type: Schema.Types.ObjectId, ref: 'Trade' }] // need o remove
+  //add createdTimeStamp
+  //isDeleted prop add
+  //deleted time stamp
 });
 
 export default model('TradingAccount', tradingAccount);

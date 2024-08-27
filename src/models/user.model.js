@@ -16,16 +16,9 @@ const userSchema = new Schema({
   country: {
     type: String
   },
-  timeZone: {
+  phoneNumber: {
     type: String
-  },
-  dateFormat: {
-    type: String
-  },
-  timeFormat: {
-    type: String
-  },
-  accountName: [{ type: Schema.Types.ObjectId, ref: 'TradingAccount' }]
+  }
 });
 
 export default model('User', userSchema);

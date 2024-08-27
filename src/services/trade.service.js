@@ -125,7 +125,6 @@ export const updateTrade = async (tradeId, body) => {
     // Update User if related fields were provided
     if (body.userId) {
       const user = await User.findById(userId);
-      console.log(user);
 
       const updatedUser = await User.findByIdAndUpdate(
         body.userId,

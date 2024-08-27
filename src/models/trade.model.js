@@ -9,39 +9,45 @@ const tradeModel = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'TradingAccount',
     required: true
-  },
+  }, //broker_account
   market: {
     type: String
   },
   instrument: {
     type: String
   },
-  account: { type: String },
+  account: { type: String }, // need to remove
   exchange: { type: String },
-  brokerName: { type: String },
+  brokerName: { type: String }, //need to remove
   marketAssessment: { type: String },
   tradeStrategy: { type: String },
-  stockName: { type: String },
+  stockName: { type: String }, // as assetName, commodityName, forexPairName so need to remove
   tradeType: { type: String },
-  profitTarget: { type: String }, //need to remove
-  stopLoss: { type: String }, //need to remove
+  profitTarget: { type: String }, // remove
+  stopLoss: { type: String },
   entryDate: { type: Date, require: true },
   //Add month and week prop
   entryTime: { type: String, require: true },
-  tradeQuantity: { type: Number, require: true },
+  strikePrice: { type: Number },
+  tradeQuantity: { type: Number, require: true }, //entry
   tradeExitQuantity: { type: Number, require: true }, //need to remove
-  tradeStatus: { type: String }, //need to remove
-  brokerage: { type: String }, //need to remove
-  cmp: { type: String }, //need to remove
-  openQuantity: { type: Number, require: true }, //need to remove
-  expiry: { type: String }, //need to remove
-  price: { type: Number, require: true },
+  tradeStatus: { type: String },
+  brokerage: { type: String },
+  cmp: { type: String },
+  openQuantity: { type: Number, require: true },
+  expiry: { type: String },
+  price: { type: Number, require: true }, //Entry Price
   exit: [{ type: Schema.Types.ObjectId, ref: 'Exit' }], // need to change the exit date arr to obj
-  numOfLots: { type: Number }, //need to remove
-  lotSize: { type: Number, require: true }, //need to remove
-  openPosition: { type: String }, //need to remove
-  profitClosed: { type: Number }, //need to remove
-  profitOpen: { type: Number }, //need to remove
+  numOfLots: { type: Number },
+  lotSize: { type: Number },
+  openPosition: { type: String },
+  profitClosed: { type: Number },
+  profitOpen: { type: Number },
+  isGrouped: { type: Boolean, default: false },
+  remarks: { type: String },
+  commodityName: { type: String }, //need to remove
+  futureOptions: { type: String },
+  assetName: { type: String },
   groupTrade: { type: Schema.Types.ObjectId, ref: 'GroupTrade' }
 });
 

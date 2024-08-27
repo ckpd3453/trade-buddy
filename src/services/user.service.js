@@ -14,7 +14,7 @@ export const signUp = async (user) => {
       return {
         code: HttpStatus.BAD_REQUEST,
         data: [],
-        message: `User Already Exist, Please login with ${user.email}.`
+        message: `User already exist with this email.`
       };
     }
 
@@ -29,6 +29,8 @@ export const signUp = async (user) => {
       userId: data._id,
       bankName: user.accountName
     });
+
+    await userUtils.sendMail(data.email, data._id, 'registration');
     return {
       code: HttpStatus.CREATED,
       data: data,
@@ -183,7 +185,7 @@ export const forgetPassword = async (body) => {
       };
     } else {
       // const token = await userUtils.getToken(user);
-      userUtils.sendResetPasswordMail(body.email, user._id);
+      await userUtils.sendMail(body.email, user._id, 'reset');
 
       return {
         code: HttpStatus.OK,

@@ -15,6 +15,15 @@ export const signUp = async (req, res) => {
   });
 };
 
+export const generateOtp = async (req, res) => {
+  const data = await UserService.generateOtp(req.body.email);
+  res.status(data.code).json({
+    code: data.code,
+    data: data.data,
+    message: data.message
+  });
+};
+
 /**
  * SignIn-API :-
  * @param {client side request for user credential} req

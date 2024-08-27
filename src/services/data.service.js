@@ -4,23 +4,28 @@ import { cleanup, parseCSV } from '../utils/data.util';
 
 export const uploadCSVData = async (filePath) => {
   try {
+    if (!filePath) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: [],
+        message: 'Not able to fetch file path'
+      };
+    }
     const results = await parseCSV(filePath);
 
     const collections = {};
     results.forEach((row) => {
-      const { collectionName, ...data } = row;
-      if (!collections[collectionName]) {
-        collections[collectionName] = [];
+      const { 'Exchange Type': exchangeType, ...data } = row; // Use 'Exchange Type' to group data
+      if (!collections[exchangeType]) {
+        collections[exchangeType] = [];
       }
-      collections[collectionName].push(data);
+      collections[exchangeType].push(data); // Group data by exchange type
     });
 
-    const savePromises = Object.keys(collections).map(
-      async (collectionName) => {
-        const model = getModel(collectionName, {});
-        await model.insertMany(collections[collectionName]);
-      }
-    );
+    const savePromises = Object.keys(collections).map(async (exchangeType) => {
+      const model = getModel(exchangeType, {}); // Get model for each exchange type
+      await model.insertMany(collections[exchangeType]); // Insert data for each exchange type
+    });
 
     await Promise.all(savePromises);
     cleanup(filePath); // Cleanup uploaded file after processing

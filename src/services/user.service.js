@@ -2,6 +2,7 @@ import User from '../models/user.model';
 import HttpStatus from 'http-status-codes';
 import * as userUtils from '../utils/user.util';
 import { createTradingAccount } from './tradingAccount.service';
+import OtpModel from '../models/OtpModel';
 
 /**
  * @param {req.body} user
@@ -20,15 +21,8 @@ export const signUp = async (user) => {
 
     const secureUser = await userUtils.hashPassword(user);
 
-    console.log(user);
-
-    const { accountName, ...newUser } = secureUser;
-    const data = new User(newUser);
+    const data = new User(secureUser);
     await data.save();
-    await createTradingAccount({
-      userId: data._id,
-      bankName: user.accountName
-    });
 
     await userUtils.sendMail(data.email, data._id, 'registration');
     return {
@@ -46,47 +40,124 @@ export const signUp = async (user) => {
   }
 };
 
+export const generateOtp = async (email) => {
+  console.log(email);
+
+  // Generate a 6-digit random OTP
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  console.log(otp);
+
+  try {
+    // Check if an OTP already exists for the email
+    const checkExistingOtp = await OtpModel.findOne({ email: email });
+
+    let savedOtp;
+    if (!checkExistingOtp) {
+      // If no existing OTP, create a new one
+      savedOtp = await OtpModel.create({ email: email, otp: otp });
+    } else {
+      // If OTP exists, update it
+      savedOtp = await OtpModel.updateOne({ email: email }, { otp: otp });
+    }
+
+    return {
+      code: HttpStatus.OK,
+      data: [{ email, otp }], // Return email and OTP for debugging
+      message: 'Success'
+    };
+  } catch (error) {
+    return {
+      code: HttpStatus.INTERNAL_SERVER_ERROR,
+      data: [],
+      message: 'Failed to generate OTP'
+    };
+  }
+};
+
 export const signIn = async (userCredential) => {
   try {
-    const checkUser = await User.findOne({ email: userCredential.email });
+    const { email, password, otp } = userCredential;
+
+    // Check if the user exists
+    const checkUser = await User.findOne({ email: email });
 
     if (checkUser) {
-      const checkPassword = await userUtils.validatePassword(
-        userCredential,
-        checkUser
-      );
-      if (checkPassword) {
-        const token = await userUtils.getToken(checkUser);
-        return {
-          code: HttpStatus.OK,
-          data: {
-            fName: checkUser.firstName,
-            lName: checkUser.lastName,
-            token: token
-          },
-          message: 'user login success.'
-        };
+      if (password) {
+        // Password-based login
+        const checkPassword = await userUtils.validatePassword(
+          userCredential,
+          checkUser
+        );
+
+        if (checkPassword) {
+          // Generate a token after successful password validation
+          const token = await userUtils.getToken(checkUser);
+
+          return {
+            code: HttpStatus.OK,
+            data: {
+              fName: checkUser.firstName,
+              lName: checkUser.lastName,
+              token: token
+            },
+            message: 'User login success.'
+          };
+        } else {
+          return {
+            code: HttpStatus.BAD_REQUEST,
+            data: [],
+            message: 'Please enter a valid password'
+          };
+        }
+      } else if (otp) {
+        // OTP-based login
+        const checkOtp = await OtpModel.findOne({ email: email, otp: otp });
+
+        if (checkOtp) {
+          // Generate a token after successful OTP validation
+          const token = await userUtils.getToken(checkUser);
+
+          // Optionally delete the OTP after successful login to prevent reuse
+          await OtpModel.deleteOne({ email: email, otp: otp });
+
+          return {
+            code: HttpStatus.OK,
+            data: {
+              fName: checkUser.firstName,
+              lName: checkUser.lastName,
+              token: token
+            },
+            message: 'User login success using OTP.'
+          };
+        } else {
+          return {
+            code: HttpStatus.BAD_REQUEST,
+            data: [],
+            message: 'Invalid OTP, please try again.'
+          };
+        }
       } else {
         return {
           code: HttpStatus.BAD_REQUEST,
           data: [],
-          message: 'Please enter valid password'
+          message: 'Please provide a valid password or OTP to log in.'
         };
       }
     } else {
       return {
         code: HttpStatus.BAD_REQUEST,
         data: [],
-        message: 'User is not registered, please SignUp first.'
+        message: 'User is not registered, please sign up first.'
       };
     }
   } catch (error) {
     console.error('Error logging in user:', error);
+
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
-      message: `something went wrong
-              ${error}`
+      message: `Something went wrong: ${error.message}`
     };
   }
 };

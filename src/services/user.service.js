@@ -1,7 +1,6 @@
 import User from '../models/user.model';
 import HttpStatus from 'http-status-codes';
 import * as userUtils from '../utils/user.util';
-import { createTradingAccount } from './tradingAccount.service';
 import OtpModel from '../models/OtpModel';
 
 /**
@@ -24,7 +23,7 @@ export const signUp = async (user) => {
     const data = new User(secureUser);
     await data.save();
 
-    await userUtils.sendMail(data.email, data._id, 'registration');
+    await userUtils.sendMail(data.email, data._id, { message: 'registration' });
     return {
       code: HttpStatus.CREATED,
       data: data,
@@ -61,10 +60,11 @@ export const generateOtp = async (email) => {
       savedOtp = await OtpModel.updateOne({ email: email }, { otp: otp });
     }
 
+    await userUtils.sendMail(email, null, { message: 'otp', otp: otp });
     return {
       code: HttpStatus.OK,
-      data: [{ email, otp }], // Return email and OTP for debugging
-      message: 'Success'
+      data: email, // Return email and OTP for debugging
+      message: `Otp is sent to your email id ${email}`
     };
   } catch (error) {
     return {
@@ -256,7 +256,7 @@ export const forgetPassword = async (body) => {
       };
     } else {
       // const token = await userUtils.getToken(user);
-      await userUtils.sendMail(body.email, user._id, 'reset');
+      await userUtils.sendMail(body.email, user._id, { message: 'reset' });
 
       return {
         code: HttpStatus.OK,

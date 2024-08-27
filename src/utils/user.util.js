@@ -52,7 +52,7 @@ export const sendMail = async (email, userId, type) => {
 
     let mailConfigurations;
 
-    if (type === 'registration') {
+    if (type.message === 'registration') {
       // Registration success email
       mailConfigurations = {
         from: 'tradebuddyteam@gmail.com',
@@ -68,7 +68,7 @@ export const sendMail = async (email, userId, type) => {
           <p>TradeBuddy Team</p>
         `
       };
-    } else if (type === 'reset') {
+    } else if (type.message === 'reset') {
       // Password reset email
       mailConfigurations = {
         from: 'tradebuddyteam@gmail.com',
@@ -80,6 +80,24 @@ export const sendMail = async (email, userId, type) => {
           <p>We received a request to reset your password. Please click the link below to reset your password:</p>
           <a href="${resetLink}" style="display:inline-block;padding:10px 20px;color:#fff;background-color:#007bff;text-decoration:none;border-radius:5px;">Reset Password</a>
           <p>If you did not request a password reset, please ignore this email or contact support if you have questions.</p>
+          <p>Thanks,</p>
+          <p>TradeBuddy Team</p>
+        `
+      };
+    } else if (type.message === 'otp' && type.otp) {
+      console.log('In Otp Generator================>>>>>>>>>>>>>>>');
+
+      // OTP email
+      mailConfigurations = {
+        from: 'tradebuddyteam@gmail.com',
+        to: email,
+        subject: 'Your One-Time Password (OTP)',
+        html: `
+          <h2>Your OTP Code</h2>
+          <p>Hi there!</p>
+          <p>Your OTP code is: <strong>${type.otp}</strong></p>
+          <p>Please enter this code to proceed with your login.</p>
+          <p>If you did not request this code, please ignore this email or contact support.</p>
           <p>Thanks,</p>
           <p>TradeBuddy Team</p>
         `

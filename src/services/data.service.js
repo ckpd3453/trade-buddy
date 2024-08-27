@@ -15,16 +15,16 @@ export const uploadCSVData = async (filePath) => {
 
     const collections = {};
     results.forEach((row) => {
-      const { 'Exchange Type': exchangeType, ...data } = row; // Use 'Exchange Type' to group data
-      if (!collections[exchangeType]) {
-        collections[exchangeType] = [];
+      const { SchemaName: schemaName, ...data } = row; // Use 'Exchange Type' to group data
+      if (!collections[schemaName]) {
+        collections[schemaName] = [];
       }
-      collections[exchangeType].push(data); // Group data by exchange type
+      collections[schemaName].push(data); // Group data by exchange type
     });
 
-    const savePromises = Object.keys(collections).map(async (exchangeType) => {
-      const model = getModel(exchangeType, {}); // Get model for each exchange type
-      await model.insertMany(collections[exchangeType]); // Insert data for each exchange type
+    const savePromises = Object.keys(collections).map(async (schemaName) => {
+      const model = getModel(schemaName, {}); // Get model for each exchange type
+      await model.insertMany(collections[schemaName]); // Insert data for each exchange type
     });
 
     await Promise.all(savePromises);

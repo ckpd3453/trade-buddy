@@ -1,6 +1,9 @@
 import express from 'express';
 import * as userController from '../controllers/user.controller';
-import { newUserValidator } from '../validators/user.validator';
+import {
+  newUserValidator,
+  updatedUserValidator
+} from '../validators/user.validator';
 import { userAuth } from '../middlewares/auth.middleware';
 
 const router = express.Router();
@@ -13,7 +16,7 @@ router.post('/otpGenerator', userController.generateOtp);
 router.post('/signIn', userController.signIn);
 
 //User-Profile-Update
-router.put('/', userAuth, userController.updateProfile);
+router.put('/', updatedUserValidator, userAuth, userController.updateProfile);
 
 //Get-All-User-Accounts
 router.get('/', userAuth, userController.getUserAccount);

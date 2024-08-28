@@ -47,3 +47,37 @@ export const newUserValidator = (req, res, next) => {
     next();
   }
 };
+
+export const updatedUserValidator = (req, res, next) => {
+  const schema = Joi.object({
+    firstName: Joi.string().min(4).required(),
+    lastName: Joi.string().required(),
+    email: Joi.string()
+      .email()
+      .pattern(
+        /^[a-zA-Z0-9._%+-]+@(gmail\.com|yahoo\.com|outlook\.com|hotmail\.com)$/
+      )
+      .required(),
+    country: Joi.string().min(3).optional(),
+    phoneNumber: Joi.string()
+      .pattern(/^[0-9]{10}$/)
+      .required()
+      .messages({
+        'string.empty': 'Phone number cannot be empty',
+        'string.pattern.base': 'Phone number must be a 10-digit number'
+      }),
+    timeZone: Joi.string().optional(),
+    dateFormat: Joi.string().optional(),
+    timeFormat: Joi.string().optional(),
+    currency: Joi.string().optional()
+  });
+
+  const { error, value } = schema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.details[0].message });
+  } else {
+    req.validatedBody = value;
+    next();
+  }
+};

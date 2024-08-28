@@ -200,6 +200,9 @@ export const updateProfile = async (updateBody) => {
     if (updateBody.timeFormat) {
       user.timeFormat = updateBody.timeFormat;
     }
+    if (updateBody.currency) {
+      user.currency = updateBody.currency;
+    }
 
     const updatedUser = await user.save();
     return {

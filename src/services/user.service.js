@@ -228,6 +228,7 @@ export const getUserAccount = async (userId) => {
         path: 'trades'
       })
       .exec();
+
     return {
       code: HttpStatus.OK,
       data: userAccounts,

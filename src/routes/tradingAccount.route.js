@@ -9,8 +9,8 @@ const router = express.Router();
 //Add-Account-Name
 router.post(
   '',
-  userAuth,
   newTradingAccountValidator,
+  userAuth,
   tradingAccountController.createTradingAccount
 );
 

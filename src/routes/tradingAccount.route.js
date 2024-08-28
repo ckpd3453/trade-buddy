@@ -2,11 +2,17 @@ import express from 'express';
 import { userAuth } from '../middlewares/auth.middleware';
 
 import * as tradingAccountController from '../controllers/tradingAccount.controller';
+import { newTradingAccountValidator } from '../validators/tradingAccount.validator';
 
 const router = express.Router();
 
 //Add-Account-Name
-router.post('', userAuth, tradingAccountController.createTradingAccount);
+router.post(
+  '',
+  userAuth,
+  newTradingAccountValidator,
+  tradingAccountController.createTradingAccount
+);
 
 router.get('', userAuth, tradingAccountController.getAllTradingAccountList);
 

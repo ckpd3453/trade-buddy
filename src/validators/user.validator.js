@@ -66,10 +66,10 @@ export const updatedUserValidator = (req, res, next) => {
         'string.empty': 'Phone number cannot be empty',
         'string.pattern.base': 'Phone number must be a 10-digit number'
       }),
-    timeZone: Joi.string().optional(),
-    dateFormat: Joi.string().optional(),
-    timeFormat: Joi.string().optional(),
-    currency: Joi.string().optional()
+    timeZone: Joi.string().allow('').optional(),
+    dateFormat: Joi.string().allow('').optional(),
+    timeFormat: Joi.string().allow('').optional(),
+    currency: Joi.string().allow('').optional()
   });
 
   const { error, value } = schema.validate(req.body);

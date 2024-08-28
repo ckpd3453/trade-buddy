@@ -7,7 +7,7 @@ export const createTradingAccount = async (updateBody) => {
     const userId = updateBody.userId;
     const tradingAccount = new TradingAccount({
       userId,
-      account: updateBody.bankName
+      account: updateBody.account
     });
     await tradingAccount.save();
     // Update the user to include this trading account

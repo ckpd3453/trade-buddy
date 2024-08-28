@@ -164,8 +164,6 @@ export const signIn = async (userCredential) => {
 
 export const updateProfile = async (updateBody) => {
   try {
-    console.log(updateBody);
-
     const user = await User.findById(updateBody.userId);
 
     if (!user) {
@@ -221,8 +219,6 @@ export const updateProfile = async (updateBody) => {
 
 export const getUserAccount = async (userId) => {
   try {
-    console.log(userId);
-
     const userAccounts = await User.findById(userId)
       .select('-password')
       .populate({

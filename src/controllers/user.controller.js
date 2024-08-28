@@ -6,7 +6,6 @@ import * as UserService from '../services/user.service';
  * @param {server side response as json format} res
  */
 export const signUp = async (req, res) => {
-  console.log('InController=========>>>>>>>>');
   const data = await UserService.signUp(req.body);
   res.status(data.code).json({
     code: data.code,

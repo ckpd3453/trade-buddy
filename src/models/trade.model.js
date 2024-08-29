@@ -23,20 +23,18 @@ const tradeModel = new Schema({
   tradeStrategy: { type: String },
   stockName: { type: String }, // as assetName, commodityName, forexPairName so need to remove
   tradeType: { type: String },
-  profitTarget: { type: String }, // remove
   stopLoss: { type: String },
   entryDate: { type: Date, require: true },
   //Add month and week prop
   entryTime: { type: String, require: true },
   strikePrice: { type: Number },
-  tradeQuantity: { type: Number, require: true }, //entry
-  tradeExitQuantity: { type: Number, require: true }, //need to remove
+  entryQuantity: { type: Number, require: true }, //entry
   tradeStatus: { type: String },
   brokerage: { type: String },
   cmp: { type: String },
   openQuantity: { type: Number, require: true },
   expiry: { type: String },
-  price: { type: Number, require: true }, //Entry Price
+  entryPrice: { type: Number, require: true }, //Entry Price
   exit: [{ type: Schema.Types.ObjectId, ref: 'Exit' }], // need to change the exit date arr to obj
   numOfLots: { type: Number },
   lotSize: { type: Number },
@@ -45,7 +43,6 @@ const tradeModel = new Schema({
   profitOpen: { type: Number },
   isGrouped: { type: Boolean, default: false },
   remarks: { type: String },
-  commodityName: { type: String }, //need to remove
   futureOptions: { type: String },
   assetName: { type: String },
   groupTrade: { type: Schema.Types.ObjectId, ref: 'GroupTrade' }

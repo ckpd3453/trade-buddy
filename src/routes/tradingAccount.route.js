@@ -11,9 +11,11 @@ router.post(
   '',
   newTradingAccountValidator,
   userAuth,
-  tradingAccountController.createTradingAccount
+  tradingAccountController.createBrokerAccount
 );
 
-router.get('', userAuth, tradingAccountController.getAllTradingAccountList);
+router.get('', userAuth, tradingAccountController.getAllBrokerAccountList);
+
+router.put('/:_id', userAuth, tradingAccountController.trashBrokerAccount);
 
 export default router;

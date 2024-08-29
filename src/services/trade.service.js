@@ -7,15 +7,15 @@ import Exit from '../models/exit.model';
 import tradeAnalysisModel from '../models/tradeAnalysis.model';
 import User from '../models/user.model';
 
-export const createTrade = async (tradeAccountId, body) => {
+export const createTrade = async (brokerAccountId, body) => {
   try {
-    const newTradeAccountId = mongoose.Types.ObjectId(tradeAccountId);
+    const newBrokerAccountId = mongoose.Types.ObjectId(brokerAccountId);
 
     // Check if the trading account exists
-    const tradingAccountExists = await TradingAccount.findById(
-      newTradeAccountId
+    const brokerAccountExists = await TradingAccount.findById(
+      newBrokerAccountId
     );
-    if (!tradingAccountExists) {
+    if (!brokerAccountExists) {
       return {
         code: HttpStatus.BAD_REQUEST,
         data: [],
@@ -23,22 +23,26 @@ export const createTrade = async (tradeAccountId, body) => {
           'Trading Account does not exist. Please provide a valid trading account ID.'
       };
     }
+
+    // Extract exit from body and set other trade details
     const { exit, ...tradeDetails } = body;
+
+    // Get the current month and weekday
+    const currentDate = new Date();
+    const month = currentDate.toLocaleString('default', { month: 'long' }); // e.g., "August"
+    const weekday = currentDate.toLocaleString('default', { weekday: 'long' }); // e.g., "Monday"
+
+    // Prepare the trade details including the broker account ID
     const updatedTradeDetail = {
-      tradingAccountId: newTradeAccountId,
+      brokerAccountId: newBrokerAccountId,
+      entryTradeMonth: month, // Setting current month
+      entryTradeWeek: weekday, // Setting current weekday
       ...tradeDetails
     };
 
-    // Create the trade
+    // Create the trade with the updated trade details
     const trade = new Trade(updatedTradeDetail);
     await trade.save();
-
-    // Update the trading account to include this trade
-    await TradingAccount.findByIdAndUpdate(newTradeAccountId, {
-      $push: { trades: trade._id }
-    });
-
-    // await trade.save();
 
     const exitData = await createExit(trade._id, exit);
 
@@ -53,6 +57,7 @@ export const createTrade = async (tradeAccountId, body) => {
       message: 'Added Manual trade with default exit successfully'
     };
   } catch (error) {
+    console.error('Error creating trade:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
@@ -310,7 +315,7 @@ export const createExit = async (tradeId, body) => {
     );
 
     // Check if adding the new exit would exceed the trade's quantity
-    if (totalExitQuantity + body.quantity > trade.tradeQuantity) {
+    if (totalExitQuantity + body.quantity > trade.entryQuantity) {
       return {
         code: HttpStatus.BAD_REQUEST,
         data: [],
@@ -320,32 +325,31 @@ export const createExit = async (tradeId, body) => {
 
     // Create the new exit
     const exit = new Exit({
-      tradingAccountId: trade.tradingAccountId,
       tradeId,
       ...body
     });
 
     // Calculate trade analysis for the new exit
     const position =
-      trade.tradeQuantity > totalExitQuantity + body.quantity
+      trade.entryQuantity > totalExitQuantity + body.quantity
         ? 'Open'
         : 'Close';
     const resultClosedPosition =
       position === 'Close'
-        ? (body.price - trade.price) * body.quantity < 0
+        ? (body.price - trade.entryPrice) * body.quantity < 0
           ? 'Loss'
           : 'Profit'
         : null;
     const profitClosedPosition =
       resultClosedPosition === 'Profit'
-        ? (body.price - trade.price) * body.quantity
+        ? (body.price - trade.entryPrice) * body.quantity
         : 0;
     const lossClosedPosition =
       resultClosedPosition === 'Loss'
-        ? (body.price - trade.price) * body.quantity
+        ? (body.price - trade.entryPrice) * body.quantity
         : 0;
     const profitAndLossOpenPosition =
-      position === 'Open' ? (body.price - trade.price) * body.quantity : 0;
+      position === 'Open' ? (body.price - trade.entryPrice) * body.quantity : 0;
 
     const tradeDuration =
       position === 'Close'
@@ -360,7 +364,7 @@ export const createExit = async (tradeId, body) => {
         : 'Swing';
     const investment =
       trade.tradeType === 'Buy'
-        ? trade.tradeQuantity * trade.price
+        ? trade.entryQuantity * trade.entryPrice
         : body.quantity * body.price;
     const roi =
       position === 'Open'
@@ -371,28 +375,28 @@ export const createExit = async (tradeId, body) => {
     const tradeAnalysis = new tradeAnalysisModel({
       tradeId: trade._id,
       exitId: exit._id,
-      position: position,
-      resultClosedPosition: resultClosedPosition,
-      profitClosedPosition: profitClosedPosition,
-      lossClosedPosition: lossClosedPosition,
-      profitAndLossOpenPosition: profitAndLossOpenPosition,
-      tradeDuration: tradeDuration,
-      tradeStrategy: tradeStrategy,
-      investment: investment,
-      roi: roi
+      position,
+      resultClosedPosition,
+      profitClosedPosition,
+      lossClosedPosition,
+      profitAndLossOpenPosition,
+      tradeDuration,
+      tradeStrategy,
+      investment,
+      roi
     });
+
+    await tradeAnalysis.save();
 
     // Update the exit document to include the tradeAnalysis reference
     exit.tradeAnalysis.push(tradeAnalysis._id);
-    await exit.save();
-    // console.log('In exit trade :- ', trade);
 
-    // // Update the trade to include this exit
+    // Update the trade to include this exit
     trade.exit.push(exit._id);
-
     await trade.save();
 
-    // await trade.save();
+    await exit.save();
+
     return {
       code: HttpStatus.OK,
       data: exit,
@@ -400,6 +404,7 @@ export const createExit = async (tradeId, body) => {
         'Exit created, trade analysis calculated, and trade updated successfully'
     };
   } catch (error) {
+    console.error('Error creating exit:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],

@@ -5,11 +5,6 @@ const exitModel = new Schema({
   userId: {
     type: String
   },
-  tradingAccountId: {
-    type: Schema.Types.ObjectId,
-    ref: 'TradingAccount',
-    required: true
-  }, // need to remove
   tradeId: {
     type: Schema.Types.ObjectId,
     ref: 'Trade',

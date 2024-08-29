@@ -21,7 +21,7 @@ const tradeModel = new Schema({
   tradeStrategy: { type: String },
   assetName: { type: String },
   tradeType: { type: String },
-  stopLoss: { type: String },
+  stopLoss: { type: Number },
   entryDate: { type: Date, require: true },
   //Add month and week prop
   entryTradeMonth: { type: String },
@@ -31,7 +31,7 @@ const tradeModel = new Schema({
   entryQuantity: { type: Number, require: true },
   tradeStatus: { type: String },
   brokerage: { type: String },
-  cmp: { type: String },
+  cmp: { type: Number },
   openQuantity: { type: Number, require: true },
   expiry: { type: String },
   entryPrice: { type: Number, require: true },

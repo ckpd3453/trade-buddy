@@ -1,11 +1,17 @@
 import express from 'express';
 import { userAuth } from '../middlewares/auth.middleware';
 import * as tradeController from '../controllers/trade.controller';
+import { newTradeValidator } from '../validators/trade.validator';
 
 const router = express.Router();
 
 router.post('', userAuth, tradeController.groupTrade);
-router.post('/:tradingAccountId', userAuth, tradeController.createTrade);
+router.post(
+  '/:brokerAccountId',
+  newTradeValidator,
+  userAuth,
+  tradeController.createTrade
+);
 router.get('/user-trade', userAuth, tradeController.getAllTradeOfUser);
 router.put('/:tradeId', userAuth, tradeController.updateTrade);
 // router.get('/', userAuth, tradeController.getAllTradeOfUser);

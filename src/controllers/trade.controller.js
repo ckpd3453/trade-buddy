@@ -23,7 +23,7 @@ export const getAllTradeOfUser = async (req, res) => {
 
 export const createTrade = async (req, res) => {
   const data = await TradeService.createTrade(
-    req.params.tradingAccountId,
+    req.params.brokerAccountId,
     req.body
   );
   res.status(data.code).json({

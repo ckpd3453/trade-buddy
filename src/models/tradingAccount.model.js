@@ -8,7 +8,7 @@ const brokerAccount = new Schema({
     required: true
   },
   account: { type: String },
-  trades: [{ type: Schema.Types.ObjectId, ref: 'Trade' }], // need o remove
+  // trades: [{ type: Schema.Types.ObjectId, ref: 'Trade' }], // need o remove
   createdTimeStamp: {
     type: Date,
     default: Date.now // Automatically sets the created time to the current time

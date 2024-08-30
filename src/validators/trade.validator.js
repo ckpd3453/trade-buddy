@@ -42,7 +42,7 @@ export const newTradeValidator = (req, res, next) => {
       'any.required': 'Please Enter trade quantity purchased.'
     }),
     tradeStatus: Joi.string().optional(),
-    brokerage: Joi.string().optional(),
+    brokerage: Joi.number().optional(),
     cmp: Joi.number().optional(),
     openQuantity: Joi.number().optional(),
     expiry: Joi.string().optional(),

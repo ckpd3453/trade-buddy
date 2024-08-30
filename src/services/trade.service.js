@@ -96,7 +96,7 @@ export const updateTrade = async (tradeId, body) => {
             // Update existing exit
             const updatedExit = await updateExit(tradeId, exitId, exitBody);
 
-            if (!updatedExit.success) {
+            if (!updatedExit.code == 200) {
               return {
                 code: HttpStatus.BAD_REQUEST,
                 data: [],
@@ -118,8 +118,7 @@ export const updateTrade = async (tradeId, body) => {
         if (exitId) {
           // Update existing exit
           const updatedExit = await updateExit(tradeId, exitId, exitBody);
-
-          if (!updatedExit.success) {
+          if (!updatedExit.code == 200) {
             return {
               code: HttpStatus.BAD_REQUEST,
               data: [],
@@ -347,8 +346,6 @@ const updateExit = async (tradeId, exitId, exitBody) => {
     trade.openQuantity = trade.entryQuantity - newTotalExitQuantity;
 
     await trade.save();
-    console.log(trade);
-
     return {
       code: HttpStatus.OK,
       data: trade,

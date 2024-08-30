@@ -30,7 +30,7 @@ const tradeModel = new Schema({
   strikePrice: { type: Number },
   entryQuantity: { type: Number, require: true },
   tradeStatus: { type: String },
-  brokerage: { type: String },
+  brokerage: { type: Number },
   cmp: { type: Number },
   openQuantity: { type: Number, require: true },
   expiry: { type: String },

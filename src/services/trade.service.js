@@ -196,39 +196,29 @@ export const getAllTrade = async (tradingAccountId, body) => {
 
 export const getAllTradeOfUser = async (body) => {
   try {
-    // Use findOne to search by userId
-
-    const tradingAccount = await TradingAccount.find({
+    // Find all trades associated with the user's trading account
+    const trades = await Trade.find({
       userId: body.userId
     }).populate({
-      path: 'trades',
-      populate: {
-        path: 'exit',
-        model: 'Exit'
-      }
+      path: 'exit',
+      model: 'Exit' // Populate exit details for each trade
     });
 
-    var allTradesOfUser = [];
-    tradingAccount.map((account) => {
-      account.trades.map((trade) => {
-        allTradesOfUser.push(trade);
-      });
-    });
-    if (!tradingAccount) {
+    if (!trades || trades.length === 0) {
       return {
-        code: HttpStatus.BAD_REQUEST,
+        code: HttpStatus.OK,
         data: [],
-        message: 'No trading account exists with this ID'
+        message: 'No trades found for this user.'
       };
     }
 
     return {
       code: HttpStatus.OK,
-      data: allTradesOfUser,
+      data: trades,
       message: 'All trades fetched successfully'
     };
   } catch (error) {
-    console.error('Error fetching trading account:', error);
+    console.error('Error fetching trades for user:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],

@@ -50,7 +50,7 @@ export const newTradeValidator = (req, res, next) => {
       'number.base': 'Entry Price should be a number',
       'any.required': 'Please Enter Trade Entry Price'
     }),
-    exit: Joi.any().optional(),
+    exit: Joi.any().optional(), // Need to ask
     numOfLots: Joi.number().optional(),
     lotSize: Joi.number().optional(),
     profitClosed: Joi.number().optional(),

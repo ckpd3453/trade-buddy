@@ -2,9 +2,6 @@ import { Schema, model } from 'mongoose';
 
 // Function to get or create a model with a dynamic schema
 const exitModel = new Schema({
-  userId: {
-    type: String
-  },
   tradeId: {
     type: Schema.Types.ObjectId,
     ref: 'Trade',

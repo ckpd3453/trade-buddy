@@ -75,6 +75,7 @@ export const updateTrade = async (tradeId, body) => {
       const { exitId, ...exitBody } = exit;
 
       if (exitId) {
+        // Update existing exit
         const updatedExit = await Exit.findByIdAndUpdate(exitId, exitBody, {
           new: true,
           runValidators: true
@@ -88,9 +89,10 @@ export const updateTrade = async (tradeId, body) => {
           };
         }
       } else {
-        let exitedTrade = await createExit(tradeId, exitBody);
+        // Create a new exit
+        const exitedTrade = await createExit(tradeId, exitBody);
         if (exitedTrade.code !== HttpStatus.OK) {
-          return exitedTrade;
+          return exitedTrade; // Return the error if exit creation failed
         }
       }
     }
@@ -109,8 +111,9 @@ export const updateTrade = async (tradeId, body) => {
       };
     }
 
-    let tradingAccountId = updatedTrade.tradingAccountId;
-    // Update TradingAccount if related fields were provided
+    const tradingAccountId = updatedTrade.tradingAccountId;
+
+    // Update TradingAccount if trade was updated successfully
     if (tradingAccountId) {
       const updatedTradingAccount = await TradingAccount.findByIdAndUpdate(
         tradingAccountId,
@@ -127,12 +130,10 @@ export const updateTrade = async (tradeId, body) => {
       }
     }
 
-    // Update User if related fields were provided
-    if (body.userId) {
-      const user = await User.findById(userId);
-
+    // Update User if userId is provided
+    if (userId) {
       const updatedUser = await User.findByIdAndUpdate(
-        body.userId,
+        userId,
         { $addToSet: { accountName: tradingAccountId } }, // Ensure account is linked to user
         { new: true, runValidators: true }
       );
@@ -152,6 +153,7 @@ export const updateTrade = async (tradeId, body) => {
       message: 'Trade, Exit, TradingAccount, and User updated successfully!'
     };
   } catch (error) {
+    console.error('Error in updateTrade:', error); // Enhanced logging for debugging
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
@@ -160,7 +162,7 @@ export const updateTrade = async (tradeId, body) => {
   }
 };
 
-export const getAllTrade = async (tradingAccountId, body) => {
+export const getAllTradeByBrokerAccount = async (tradingAccountId) => {
   try {
     const tradingAccount = await TradingAccount.findById(
       tradingAccountId

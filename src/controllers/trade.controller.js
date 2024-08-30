@@ -1,9 +1,8 @@
 import * as TradeService from '../services/trade.service';
 
-export const getAllTrade = async (req, res) => {
-  const data = await TradeService.getAllTrade(
-    req.params.tradingAccountId,
-    req.body
+export const getAllTradeByBrokerAccount = async (req, res) => {
+  const data = await TradeService.getAllTradeByBrokerAccount(
+    req.params.tradingAccountId
   );
   res.status(data.code).json({
     code: data.code,

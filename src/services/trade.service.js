@@ -364,17 +364,14 @@ const updateExit = async (tradeId, exitId, exitBody) => {
 
 export const getAllTradeByBrokerAccount = async (tradingAccountId) => {
   try {
-    const tradingAccount = await TradingAccount.findById(
-      tradingAccountId
-    ).populate({
-      path: 'trades',
-      populate: {
-        path: 'exit', // This populates the exit field within trades
-        model: 'Exit' // Name of the model to populate
-      }
+    const trades = await Trade.find({
+      brokerAccountId: tradingAccountId
+    }).populate({
+      path: 'exit', // This populates the exit field within trades
+      model: 'Exit' // Name of the model to populate
     });
 
-    if (!tradingAccount) {
+    if (!trades) {
       return {
         code: HttpStatus.BAD_REQUEST,
         data: [],
@@ -382,9 +379,11 @@ export const getAllTradeByBrokerAccount = async (tradingAccountId) => {
       };
     }
 
+    const existingTrade = trades.filter((trade) => trade.isDeleted === false);
+
     return {
       code: HttpStatus.OK,
-      data: tradingAccount.trades,
+      data: existingTrade,
       message: 'All trades fetched successfully'
     };
   } catch (error) {

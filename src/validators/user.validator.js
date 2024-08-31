@@ -24,7 +24,7 @@ export const newUserValidator = (req, res, next) => {
         'string.min': 'Password must be at least 8 characters long',
         'string.max': 'Password must not exceed 30 characters'
       }),
-    country: Joi.string().min(3).optional(),
+    country: Joi.string().allow('').optional(),
     phoneNumber: Joi.string()
       .pattern(/^[0-9]{10}$/)
       .required()

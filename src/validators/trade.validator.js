@@ -45,7 +45,7 @@ export const newTradeValidator = (req, res, next) => {
     brokerage: Joi.number().optional(),
     cmp: Joi.number().optional(),
     openQuantity: Joi.number().optional(),
-    expiry: Joi.string().optional(),
+    expiry: Joi.date().optional(),
     entryPrice: Joi.number().required().messages({
       'number.base': 'Entry Price should be a number',
       'any.required': 'Please Enter Trade Entry Price'
@@ -77,8 +77,8 @@ export const newTradeValidator = (req, res, next) => {
     profitClosed: Joi.number().optional(),
     profitOpen: Joi.number().optional(),
     isGrouped: Joi.boolean().default(false).optional(),
-    remarks: Joi.string().optional(),
-    futureOptions: Joi.string().optional()
+    remarks: Joi.string().allow('').optional(),
+    futureOptions: Joi.string().allow('').optional()
   });
 
   const { error, value } = schema.validate(req.body);

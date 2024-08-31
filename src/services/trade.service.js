@@ -96,6 +96,9 @@ export const updateTrade = async (tradeId, body) => {
             // Update existing exit
             const updatedExit = await updateExit(tradeId, exitId, exitBody);
 
+            updatedData.openQuantity = updatedExit.data.openQuantity;
+            updatedData.profitClosed = updatedExit.data.profitClosed;
+            updatedData.profitOpen = updatedExit.data.profitOpen;
             if (!updatedExit.code == 200) {
               return {
                 code: HttpStatus.BAD_REQUEST,
@@ -109,6 +112,9 @@ export const updateTrade = async (tradeId, body) => {
             if (exitedTrade.code !== HttpStatus.OK) {
               return exitedTrade; // Return the error if exit creation failed
             }
+            updatedData.openQuantity = exitedTrade.data.openQuantity;
+            updatedData.profitClosed = exitedTrade.data.profitClosed;
+            updatedData.profitOpen = exitedTrade.data.profitOpen;
           }
         }
       } else {
@@ -131,6 +137,9 @@ export const updateTrade = async (tradeId, body) => {
           if (exitedTrade.code !== HttpStatus.OK) {
             return exitedTrade; // Return the error if exit creation failed
           }
+          updatedData.openQuantity = exitedTrade.data.openQuantity;
+          updatedData.profitClosed = exitedTrade.data.profitClosed;
+          updatedData.profitOpen = exitedTrade.data.profitOpen;
         }
       }
     }
@@ -139,6 +148,9 @@ export const updateTrade = async (tradeId, body) => {
     const updatedTrade = await Trade.findByIdAndUpdate(tradeId, updatedData, {
       new: true, // Return the updated document
       runValidators: true // Ensure validation is applied
+    }).populate({
+      path: 'exit', // This populates the exit field within trades
+      model: 'Exit' // Name of the model to populate
     });
 
     if (!updatedTrade) {

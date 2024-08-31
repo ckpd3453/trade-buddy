@@ -14,6 +14,7 @@ router.post(
 );
 router.get('/user-trade', userAuth, tradeController.getAllTradeOfUser);
 router.put('/:tradeId', userAuth, tradeController.updateTrade);
+router.put('/delete/:tradeId', userAuth, tradeController.deleteTrade);
 // router.get('/', userAuth, tradeController.getAllTradeOfUser);
 router.get('/getAllTradeGroup', userAuth, tradeController.getAllTradeGroup);
 router.get(

@@ -212,6 +212,40 @@ export const updateTrade = async (tradeId, body) => {
   }
 };
 
+export const deleteTrade = async (tradeId) => {
+  try {
+    // Update the trade to mark it as deleted
+    const updatedTrade = await Trade.findByIdAndUpdate(
+      tradeId,
+      { isDeleted: true },
+      { new: true, runValidators: true }
+    );
+
+    // If the trade is not found, return an error response
+    if (!updatedTrade) {
+      return {
+        code: HttpStatus.NOT_FOUND,
+        data: [],
+        message: 'Trade not found or already deleted'
+      };
+    }
+
+    // Return a success response
+    return {
+      code: HttpStatus.OK,
+      data: updatedTrade,
+      message: 'Trade marked as deleted successfully'
+    };
+  } catch (error) {
+    console.error('Error in deleteTrade:', error); // Logging for debugging
+    return {
+      code: HttpStatus.INTERNAL_SERVER_ERROR,
+      data: [],
+      message: `Something went wrong: ${error.message}`
+    };
+  }
+};
+
 const updateExit = async (tradeId, exitId, exitBody) => {
   try {
     // Find the trade by its ID
@@ -424,10 +458,11 @@ export const getAllTradeOfUser = async (body) => {
         message: 'No trades found for this user.'
       };
     }
+    const existingTrade = trades.filter((trade) => trade.isDeleted === false);
 
     return {
       code: HttpStatus.OK,
-      data: trades,
+      data: existingTrade,
       message: 'All trades fetched successfully'
     };
   } catch (error) {
@@ -446,10 +481,9 @@ export const groupTrade = async (body) => {
       userId,
       groupName,
       market,
-      account,
       broker,
-      assessment,
-      strategy,
+      marketAssessment,
+      tradeStrategy,
       instrument,
       tradeType,
       quantity,
@@ -462,10 +496,9 @@ export const groupTrade = async (body) => {
       userId,
       groupName,
       market,
-      account,
       broker,
-      assessment,
-      strategy,
+      marketAssessment, // Renamed as per the schema
+      tradeStrategy, // Renamed as per the schema
       instrument,
       tradeType,
       quantity,
@@ -473,12 +506,13 @@ export const groupTrade = async (body) => {
       trades
     });
 
+    // Save the new GroupTrade object to the database
     await newGroupTrade.save();
 
-    // Update each trade with the groupTrade reference
+    // Update each trade with the groupTrade reference and set isGrouped to true
     await Trade.updateMany(
       { _id: { $in: trades } },
-      { $set: { groupTrade: newGroupTrade._id } }
+      { $set: { groupTrade: newGroupTrade._id, isGrouped: true } }
     );
 
     return {
@@ -487,10 +521,11 @@ export const groupTrade = async (body) => {
       message: 'Group trade created successfully'
     };
   } catch (error) {
+    console.error('Error in creating group trade:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
-      message: 'Something else went wrong'
+      message: 'Something went wrong'
     };
   }
 };

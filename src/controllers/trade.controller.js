@@ -41,6 +41,15 @@ export const updateTrade = async (req, res) => {
   });
 };
 
+export const deleteTrade = async (req, res) => {
+  const data = await TradeService.deleteTrade(req.params.tradeId);
+  res.status(data.code).json({
+    code: data.code,
+    data: data.data,
+    message: data.message
+  });
+};
+
 export const groupTrade = async (req, res) => {
   const data = await TradeService.groupTrade(req.body);
   res.status(data.code).json({

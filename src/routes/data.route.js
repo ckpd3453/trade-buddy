@@ -17,9 +17,14 @@ const storage = multer.diskStorage({
 // const upload = multer({ dest: 'uploads/' });
 const upload = multer({ storage });
 
-router.post('/upload', upload.single('file'), dataController.uploadCSVData);
+router.post(
+  '/upload',
+  userAuth,
+  upload.single('file'),
+  dataController.uploadCSVData
+);
 
-router.get('/', dataController.getAllAsset);
-router.get('/:collectionName', dataController.getAllTimeZone);
+router.get('/', userAuth, dataController.getAllAsset);
+router.get('/:collectionName', userAuth, dataController.getAllTimeZone);
 
 export default router;

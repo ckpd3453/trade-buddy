@@ -1,5 +1,6 @@
 import * as dataService from '../services/data.service';
 import HttpStatus from 'http-status-codes';
+import { responseObj } from '../utils/responseDto';
 
 export const uploadCSVData = async (req, res) => {
   const { file } = req;
@@ -11,27 +12,15 @@ export const uploadCSVData = async (req, res) => {
     });
   }
   const data = await dataService.uploadCSVData(file.path);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 export const getAllTimeZone = async (req, res) => {
   const data = await dataService.getAllTimeZone(req.params.collectionName);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 export const getAllAsset = async (req, res) => {
   const data = await dataService.getAllAsset();
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };

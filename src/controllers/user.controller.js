@@ -1,4 +1,5 @@
 import * as UserService from '../services/user.service';
+import { responseObj } from '../utils/responseDto';
 
 /**
  * SignUp-API :-
@@ -7,20 +8,12 @@ import * as UserService from '../services/user.service';
  */
 export const signUp = async (req, res) => {
   const data = await UserService.signUp(req.body);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 export const generateOtp = async (req, res) => {
   const data = await UserService.generateOtp(req.body.email);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 /**
@@ -30,11 +23,7 @@ export const generateOtp = async (req, res) => {
  */
 export const signIn = async (req, res) => {
   const data = await UserService.signIn(req.body);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 /**
@@ -44,11 +33,7 @@ export const signIn = async (req, res) => {
  */
 export const updateProfile = async (req, res) => {
   const data = await UserService.updateProfile(req.body);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 /**
@@ -58,11 +43,7 @@ export const updateProfile = async (req, res) => {
  */
 export const getUserAccount = async (req, res) => {
   const data = await UserService.getUserAccount(req.body.userId);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 /**
@@ -72,11 +53,7 @@ export const getUserAccount = async (req, res) => {
  */
 export const forgetPassword = async (req, res) => {
   const data = await UserService.forgetPassword(req.body);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };
 
 /**
@@ -86,9 +63,5 @@ export const forgetPassword = async (req, res) => {
  */
 export const resetPassword = async (req, res) => {
   const data = await UserService.resetPassword(req.body);
-  res.status(data.code).json({
-    code: data.code,
-    data: data.data,
-    message: data.message
-  });
+  res.status(data.code).json(responseObj(data));
 };

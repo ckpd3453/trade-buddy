@@ -69,7 +69,21 @@ export const updatedUserValidator = (req, res, next) => {
     timeZone: Joi.string().allow('').optional(),
     dateFormat: Joi.string().allow('').optional(),
     timeFormat: Joi.string().allow('').optional(),
-    currency: Joi.string().allow('').optional()
+    currency: Joi.string().allow('').optional(),
+    password: Joi.string()
+      .min(8)
+      .max(30)
+      .pattern(new RegExp('(?=.*[a-z])')) // At least one lowercase letter
+      .pattern(new RegExp('(?=.*[A-Z])')) // At least one uppercase letter
+      .pattern(new RegExp('(?=.*[0-9])')) // At least one number
+      .pattern(new RegExp('(?=.*[!@#$%^&*])')) // At least one special character
+      .optional()
+      .messages({
+        'string.pattern.base':
+          'Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character',
+        'string.min': 'Password must be at least 8 characters long',
+        'string.max': 'Password must not exceed 30 characters'
+      })
   });
 
   const { error, value } = schema.validate(req.body);

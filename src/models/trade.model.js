@@ -10,6 +10,9 @@ const tradeModel = new Schema({
     ref: 'brokerAccount',
     required: true
   }, //broker_account
+  broker: {
+    type: String
+  },
   market: {
     type: String
   },

@@ -20,6 +20,7 @@ export const newTradeValidator = (req, res, next) => {
       'string.min': 'Exchange should have a minimum length of 2',
       'any.required': 'Please Enter Exchange'
     }),
+    broker: Joi.string().required(),
     marketAssessment: Joi.string().optional(),
     tradeStrategy: Joi.string().optional(),
     assetName: Joi.string().optional(),

@@ -90,8 +90,8 @@ export const updateTrade = async (tradeId, body) => {
       if (Array.isArray(exit)) {
         // If exit is an array, iterate through each exit object
         for (const exitItem of exit) {
-          const { exitId, ...exitBody } = exitItem;
-
+          const { _id, ...exitBody } = exitItem;
+          const exitId = _id;
           if (exitId) {
             // Update existing exit
             const updatedExit = await updateExit(tradeId, exitId, exitBody);

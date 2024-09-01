@@ -50,7 +50,16 @@ export const getAllBrokerAccountList = async (body) => {
 
 export const trashBrokerAccount = async (broker_id) => {
   try {
-    // Update the document by setting isDeleted to true and updating the deletedTimeStamp
+    // Validate broker_id
+    if (!mongoose.Types.ObjectId.isValid(broker_id)) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: null,
+        message: 'Invalid broker account ID'
+      };
+    }
+
+    // Update the TradingAccount document by setting isDeleted to true and updating the deletedTimeStamp
     const result = await TradingAccount.updateOne(
       { _id: broker_id }, // Condition to match the document
       {
@@ -61,11 +70,24 @@ export const trashBrokerAccount = async (broker_id) => {
       }
     );
 
+    // Check if the broker account was marked as deleted
     if (result.nModified === 1) {
+      // Now mark all associated trades as deleted
+      await Trade.updateMany(
+        { brokerAccountId: broker_id }, // Condition to match associated trades
+        {
+          $set: {
+            isDeleted: true, // Mark trades as deleted
+            deletedTimeStamp: new Date() // Optionally set the deleted timestamp for trades
+          }
+        }
+      );
+
       return {
         code: HttpStatus.ACCEPTED,
         data: null,
-        message: 'Broker account marked as deleted successfully'
+        message:
+          'Broker account and associated trades marked as deleted successfully'
       };
     } else {
       return {
@@ -75,6 +97,7 @@ export const trashBrokerAccount = async (broker_id) => {
       };
     }
   } catch (error) {
+    console.error('Error in trashing broker account:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: null,

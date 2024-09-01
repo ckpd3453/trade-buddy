@@ -46,6 +46,7 @@ const tradeModel = new Schema({
   isGrouped: { type: Boolean, default: false },
   remarks: { type: String },
   futureOptions: { type: String },
+  CEPE: { type: String },
   groupTrade: { type: Schema.Types.ObjectId, ref: 'GroupTrade' },
   isDeleted: { type: Boolean, default: false }
 });

@@ -79,7 +79,8 @@ export const newTradeValidator = (req, res, next) => {
     profitOpen: Joi.number().optional(),
     isGrouped: Joi.boolean().default(false).optional(),
     remarks: Joi.string().allow('').optional(),
-    futureOptions: Joi.string().allow('').optional()
+    futureOptions: Joi.string().allow('').optional(),
+    CEPE: Joi.string().allow('').optional()
   });
 
   const { error, value } = schema.validate(req.body);

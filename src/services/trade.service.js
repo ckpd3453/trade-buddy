@@ -69,7 +69,7 @@ export const createTrade = async (brokerAccountId, body) => {
     return {
       code: HttpStatus.OK,
       data: newTrade,
-      message: 'Added Manual trade with exit(s) successfully'
+      message: 'Added Manual trade successfully'
     };
   } catch (error) {
     console.error('Error creating trade:', error);
@@ -532,21 +532,21 @@ export const createExit = async (tradeId, body) => {
         trade.entryQuantity > accumulatedExitQuantity ? 'Open' : 'Close';
       const resultClosedPosition =
         position === 'Close'
-          ? (exitBody.price - trade.entryPrice) * exitBody.quantity < 0
+          ? (exitBody.price - trade.cmp) * exitBody.quantity < 0
             ? 'Loss'
             : 'Profit'
           : null;
       const profitClosedPosition =
         resultClosedPosition === 'Profit'
-          ? (exitBody.price - trade.entryPrice) * exitBody.quantity
+          ? (exitBody.price - trade.cmp) * exitBody.quantity
           : 0;
       const lossClosedPosition =
         resultClosedPosition === 'Loss'
-          ? (exitBody.price - trade.entryPrice) * exitBody.quantity
+          ? (exitBody.price - trade.cmp) * exitBody.quantity
           : 0;
       const profitAndLossOpenPosition =
         position === 'Open'
-          ? (exitBody.price - trade.entryPrice) * exitBody.quantity
+          ? (exitBody.price - trade.cmp) * exitBody.quantity
           : 0;
 
       const tradeDuration =

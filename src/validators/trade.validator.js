@@ -46,7 +46,7 @@ export const newTradeValidator = (req, res, next) => {
     brokerage: Joi.number().optional(),
     cmp: Joi.number().optional(),
     openQuantity: Joi.number().optional(),
-    expiry: Joi.date().optional(),
+    expiry: Joi.string().allow('').optional(),
     entryPrice: Joi.number().required().messages({
       'number.base': 'Entry Price should be a number',
       'any.required': 'Please Enter Trade Entry Price'

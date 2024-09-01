@@ -44,7 +44,7 @@ export const getAllBrokerAccountList = async (body) => {
   return {
     code: HttpStatus.OK,
     data: nonDeletedAccount,
-    message: 'All Trading list fetched successfull'
+    message: 'All Broker Account fetched successfull'
   };
 };
 

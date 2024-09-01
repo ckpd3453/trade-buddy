@@ -479,92 +479,6 @@ export const getAllTradeOfUser = async (body) => {
   }
 };
 
-export const groupTrade = async (body) => {
-  try {
-    const {
-      userId,
-      groupName,
-      trades // Array of trade IDs
-    } = body;
-
-    // Fetch all trades to ensure they exist and are not marked as deleted
-    const existingTrades = await Trade.find({
-      _id: { $in: trades },
-      isDeleted: false,
-      isGrouped: false
-    });
-
-    if (existingTrades.length !== trades.length) {
-      return {
-        code: HttpStatus.BAD_REQUEST,
-        data: [],
-        message: 'Some trades are already grouped or are marked as deleted'
-      };
-    }
-
-    // Validate that all trades have common fields
-    const commonFields = ['market', 'broker'];
-
-    for (const field of commonFields) {
-      const fieldValues = existingTrades.map((trade) => trade[field]);
-      const uniqueValues = new Set(fieldValues);
-      if (uniqueValues.size > 1) {
-        return {
-          code: HttpStatus.BAD_REQUEST,
-          data: [],
-          message: `Trades have different ${field} values`
-        };
-      }
-    }
-
-    // Calculate total price and total quantity
-    const totalQuantity = existingTrades.reduce(
-      (acc, trade) => acc + (trade.entryQuantity || 0),
-      0
-    );
-    const totalPrice = existingTrades.reduce(
-      (acc, trade) => acc + trade.entryPrice * trade.entryQuantity,
-      0
-    );
-
-    // Extract market and broker values from the first trade
-    const { market, broker } = existingTrades[0];
-
-    // Create a new GroupTrade object
-    const newGroupTrade = new GroupTrade({
-      userId,
-      groupName,
-      market,
-      broker,
-      quantity: totalQuantity,
-      price: totalPrice,
-      trades
-    });
-
-    // Save the new GroupTrade object to the database
-    await newGroupTrade.save();
-
-    // Update each trade with the groupTrade reference and set isGrouped to true
-    await Trade.updateMany(
-      { _id: { $in: trades } },
-      { $set: { groupTrade: newGroupTrade._id, isGrouped: true } }
-    );
-
-    return {
-      code: HttpStatus.CREATED,
-      data: newGroupTrade,
-      message: 'Group trade created successfully'
-    };
-  } catch (error) {
-    console.error('Error in creating group trade:', error);
-    return {
-      code: HttpStatus.INTERNAL_SERVER_ERROR,
-      data: [],
-      message: 'Something went wrong'
-    };
-  }
-};
-
 // Service function to create exit data
 export const createExit = async (tradeId, body) => {
   try {
@@ -703,6 +617,92 @@ export const createExit = async (tradeId, body) => {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],
       message: `Something went wrong: ${error.message}`
+    };
+  }
+};
+
+export const groupTrade = async (body) => {
+  try {
+    const {
+      userId,
+      groupName,
+      trades // Array of trade IDs
+    } = body;
+
+    // Fetch all trades to ensure they exist and are not marked as deleted
+    const existingTrades = await Trade.find({
+      _id: { $in: trades },
+      isDeleted: false,
+      isGrouped: false
+    });
+
+    if (existingTrades.length !== trades.length) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: [],
+        message: 'Some trades are already grouped or are marked as deleted'
+      };
+    }
+
+    // Validate that all trades have common fields
+    const commonFields = ['market', 'broker'];
+
+    for (const field of commonFields) {
+      const fieldValues = existingTrades.map((trade) => trade[field]);
+      const uniqueValues = new Set(fieldValues);
+      if (uniqueValues.size > 1) {
+        return {
+          code: HttpStatus.BAD_REQUEST,
+          data: [],
+          message: `Trades have different ${field} values`
+        };
+      }
+    }
+
+    // Calculate total price and total quantity
+    const totalQuantity = existingTrades.reduce(
+      (acc, trade) => acc + (trade.entryQuantity || 0),
+      0
+    );
+    const totalPrice = existingTrades.reduce(
+      (acc, trade) => acc + trade.entryPrice * trade.entryQuantity,
+      0
+    );
+
+    // Extract market and broker values from the first trade
+    const { market, broker } = existingTrades[0];
+
+    // Create a new GroupTrade object
+    const newGroupTrade = new GroupTrade({
+      userId,
+      groupName,
+      market,
+      broker,
+      quantity: totalQuantity,
+      price: totalPrice,
+      trades
+    });
+
+    // Save the new GroupTrade object to the database
+    await newGroupTrade.save();
+
+    // Update each trade with the groupTrade reference and set isGrouped to true
+    await Trade.updateMany(
+      { _id: { $in: trades } },
+      { $set: { groupTrade: newGroupTrade._id, isGrouped: true } }
+    );
+
+    return {
+      code: HttpStatus.CREATED,
+      data: newGroupTrade,
+      message: 'Group trade created successfully'
+    };
+  } catch (error) {
+    console.error('Error in creating group trade:', error);
+    return {
+      code: HttpStatus.INTERNAL_SERVER_ERROR,
+      data: [],
+      message: 'Something went wrong'
     };
   }
 };

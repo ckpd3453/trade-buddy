@@ -36,7 +36,7 @@ const tradeModel = new Schema({
   brokerage: { type: Number },
   cmp: { type: Number },
   openQuantity: { type: Number, require: true },
-  expiry: { type: Date },
+  expiry: { type: String },
   entryPrice: { type: Number, require: true },
   exit: [{ type: Schema.Types.ObjectId, ref: 'Exit' }], // need to change the exit date arr to obj
   numOfLots: { type: Number },

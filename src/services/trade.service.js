@@ -521,87 +521,90 @@ export const createExit = async (tradeId, body) => {
     for (const exitBody of exits) {
       accumulatedExitQuantity += exitBody.quantity;
 
-      // Create the new exit
-      const exit = new Exit({
-        tradeId,
-        ...exitBody
-      });
+      //new Condition added
+      if (exitBody.quantity > 0) {
+        // Create the new exit
+        const exit = new Exit({
+          tradeId,
+          ...exitBody
+        });
 
-      // Calculate trade analysis for the new exit
-      const position =
-        trade.entryQuantity > accumulatedExitQuantity ? 'Open' : 'Close';
-      const resultClosedPosition =
-        position === 'Close'
-          ? (exitBody.price - trade.cmp) * exitBody.quantity < 0
-            ? 'Loss'
-            : 'Profit'
-          : null;
-      const profitClosedPosition =
-        resultClosedPosition === 'Profit'
-          ? (exitBody.price - trade.cmp) * exitBody.quantity
-          : 0;
-      const lossClosedPosition =
-        resultClosedPosition === 'Loss'
-          ? (exitBody.price - trade.cmp) * exitBody.quantity
-          : 0;
-      const profitAndLossOpenPosition =
-        position === 'Open'
-          ? (exitBody.price - trade.cmp) * exitBody.quantity
-          : 0;
+        // Calculate trade analysis for the new exit
+        const position =
+          trade.entryQuantity > accumulatedExitQuantity ? 'Open' : 'Close';
+        const resultClosedPosition =
+          position === 'Close'
+            ? (exitBody.price - trade.cmp) * exitBody.quantity < 0
+              ? 'Loss'
+              : 'Profit'
+            : null;
+        const profitClosedPosition =
+          resultClosedPosition === 'Profit'
+            ? (exitBody.price - trade.cmp) * exitBody.quantity
+            : 0;
+        const lossClosedPosition =
+          resultClosedPosition === 'Loss'
+            ? (exitBody.price - trade.cmp) * exitBody.quantity
+            : 0;
+        const profitAndLossOpenPosition =
+          position === 'Open'
+            ? (exitBody.price - trade.cmp) * exitBody.quantity
+            : 0;
 
-      const tradeDuration =
-        position === 'Close'
-          ? (new Date(exitBody.exitDate) - new Date(trade.entryDate)) /
-            (1000 * 60 * 60 * 24)
-          : null;
-      const tradeStrategy =
-        tradeDuration > 10 || tradeDuration === null
-          ? 'Investment'
-          : tradeDuration <= 0
-          ? 'Intraday'
-          : 'Swing';
-      const investment =
-        trade.tradeType === 'Buy'
-          ? trade.entryQuantity * trade.entryPrice
-          : exitBody.quantity * exitBody.price;
-      const roi =
-        position === 'Open'
-          ? (profitAndLossOpenPosition * 100) / investment
-          : (profitClosedPosition * 100) / investment;
+        const tradeDuration =
+          position === 'Close'
+            ? (new Date(exitBody.exitDate) - new Date(trade.entryDate)) /
+              (1000 * 60 * 60 * 24)
+            : null;
+        const tradeStrategy =
+          tradeDuration > 10 || tradeDuration === null
+            ? 'Investment'
+            : tradeDuration <= 0
+            ? 'Intraday'
+            : 'Swing';
+        const investment =
+          trade.tradeType === 'Buy'
+            ? trade.entryQuantity * trade.entryPrice
+            : exitBody.quantity * exitBody.price;
+        const roi =
+          position === 'Open'
+            ? (profitAndLossOpenPosition * 100) / investment
+            : (profitClosedPosition * 100) / investment;
 
-      // Create and save the TradeAnalysis
-      const tradeAnalysis = new tradeAnalysisModel({
-        tradeId: trade._id,
-        exitId: exit._id,
-        position,
-        resultClosedPosition,
-        profitClosedPosition,
-        lossClosedPosition,
-        profitAndLossOpenPosition,
-        tradeDuration,
-        tradeStrategy,
-        investment,
-        roi
-      });
+        // Create and save the TradeAnalysis
+        const tradeAnalysis = new tradeAnalysisModel({
+          tradeId: trade._id,
+          exitId: exit._id,
+          position,
+          resultClosedPosition,
+          profitClosedPosition,
+          lossClosedPosition,
+          profitAndLossOpenPosition,
+          tradeDuration,
+          tradeStrategy,
+          investment,
+          roi
+        });
 
-      await tradeAnalysis.save();
+        await tradeAnalysis.save();
 
-      // Update the exit document to include the tradeAnalysis reference
-      exit.tradeAnalysis.push(tradeAnalysis._id);
+        // Update the exit document to include the tradeAnalysis reference
+        exit.tradeAnalysis.push(tradeAnalysis._id);
 
-      // Save the exit
-      await exit.save();
+        // Save the exit
+        await exit.save();
 
-      // Update the trade to include this exit
-      trade.exit.push(exit._id);
+        // Update the trade to include this exit
+        trade.exit.push(exit._id);
 
-      // Update trade's profitClosed and profitOpen
-      trade.profitClosed = (trade.profitClosed || 0) + profitClosedPosition;
-      trade.profitOpen = (trade.profitOpen || 0) + profitAndLossOpenPosition;
+        // Update trade's profitClosed and profitOpen
+        trade.profitClosed = (trade.profitClosed || 0) + profitClosedPosition;
+        trade.profitOpen = (trade.profitOpen || 0) + profitAndLossOpenPosition;
 
-      // Update trade's status and openQuantity
-      trade.tradeStatus = position;
-      trade.openQuantity = trade.entryQuantity - accumulatedExitQuantity;
+        // Update trade's status and openQuantity
+        trade.tradeStatus = position;
+        trade.openQuantity = trade.entryQuantity - accumulatedExitQuantity;
+      }
     }
 
     await trade.save();

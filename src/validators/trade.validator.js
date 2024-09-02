@@ -58,17 +58,17 @@ export const newTradeValidator = (req, res, next) => {
           exitId: Joi.string().optional(),
           exitDate: Joi.date().optional(),
           exitTime: Joi.string().optional(),
-          quantity: Joi.number().required(),
-          price: Joi.number().required()
-        }),
+          quantity: Joi.number().optional(),
+          price: Joi.number().optional()
+        }).allow(null),
         Joi.array().items(
           Joi.object({
             // Validation schema for an array of exit objects
             exitId: Joi.string().optional(),
-            exitDate: Joi.date().required(),
-            exitTime: Joi.string().required(),
-            quantity: Joi.number().required(),
-            price: Joi.number().required()
+            exitDate: Joi.date().optional(),
+            exitTime: Joi.string().optional(),
+            quantity: Joi.number().optional(),
+            price: Joi.number().optional()
           }).allow(null)
         )
       )

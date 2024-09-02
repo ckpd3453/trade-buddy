@@ -1,6 +1,8 @@
 import Joi from '@hapi/joi';
 
 export const newTradeValidator = (req, res, next) => {
+  const currencyPattern = /^(\$)?\d+(\.\d{2})?\s?(USD|EUR|INR|GBP)?$/;
+
   const schema = Joi.object({
     market: Joi.string().min(2).required().messages({
       'string.base': 'Market should be a type of text',
@@ -25,7 +27,12 @@ export const newTradeValidator = (req, res, next) => {
     tradeStrategy: Joi.string().optional(),
     assetName: Joi.string().optional(),
     tradeType: Joi.string().optional(),
-    stopLoss: Joi.number().optional(),
+    stopLoss: Joi.alternatives()
+      .try(Joi.number().precision(2), Joi.string().pattern(currencyPattern))
+      .optional()
+      .messages({
+        'string.pattern.base': 'Stop Loss should be a valid currency format'
+      }),
     entryDate: Joi.date().required().messages({
       'date.base': 'Please Enter Trade Entry Date',
       'any.required': 'Please Enter Trade Entry Date'
@@ -37,46 +44,69 @@ export const newTradeValidator = (req, res, next) => {
       'string.empty': 'Please Enter Trade Entry Time',
       'any.required': 'Please Enter Trade Entry Time'
     }),
-    strikePrice: Joi.number().optional(),
-    entryQuantity: Joi.number().required().messages({
+    strikePrice: Joi.alternatives()
+      .try(Joi.number().precision(2), Joi.string().pattern(currencyPattern))
+      .optional()
+      .messages({
+        'string.pattern.base': 'Strike Price should be a valid currency format'
+      }),
+    entryQuantity: Joi.number().precision(2).required().messages({
       'number.base': 'Trade quantity should be a number',
       'any.required': 'Please Enter trade quantity purchased.'
     }),
     tradeStatus: Joi.string().optional(),
-    brokerage: Joi.number().optional(),
-    cmp: Joi.number().optional(),
-    openQuantity: Joi.number().optional(),
+    brokerage: Joi.number().precision(2).optional(),
+    cmp: Joi.number().precision(2).optional(),
+    openQuantity: Joi.number().precision(2).optional(),
     expiry: Joi.string().allow('').optional(),
-    entryPrice: Joi.number().required().messages({
-      'number.base': 'Entry Price should be a number',
-      'any.required': 'Please Enter Trade Entry Price'
-    }),
+    entryPrice: Joi.alternatives()
+      .try(Joi.number().precision(2), Joi.string().pattern(currencyPattern))
+      .required()
+      .messages({
+        'number.base': 'Entry Price should be a number',
+        'string.pattern.base': 'Entry Price should be a valid currency format',
+        'any.required': 'Please Enter Trade Entry Price'
+      }),
     exit: Joi.alternatives()
       .try(
         Joi.object({
-          // Validation schema for a single exit object
           exitId: Joi.string().optional(),
           exitDate: Joi.date().optional(),
           exitTime: Joi.string().optional(),
-          quantity: Joi.number().optional(),
-          price: Joi.number().optional()
+          quantity: Joi.number().precision(2).optional(),
+          price: Joi.alternatives()
+            .try(
+              Joi.number().precision(2),
+              Joi.string().pattern(currencyPattern)
+            )
+            .optional()
+            .messages({
+              'string.pattern.base': 'Price should be a valid currency format'
+            })
         }).allow(null),
         Joi.array().items(
           Joi.object({
-            // Validation schema for an array of exit objects
             exitId: Joi.string().optional(),
             exitDate: Joi.date().optional(),
             exitTime: Joi.string().optional(),
-            quantity: Joi.number().optional(),
-            price: Joi.number().optional()
+            quantity: Joi.number().precision(2).optional(),
+            price: Joi.alternatives()
+              .try(
+                Joi.number().precision(2),
+                Joi.string().pattern(currencyPattern)
+              )
+              .optional()
+              .messages({
+                'string.pattern.base': 'Price should be a valid currency format'
+              })
           }).allow(null)
         )
       )
-      .optional(), // Need to ask
+      .optional(),
     numOfLots: Joi.number().optional(),
     lotSize: Joi.number().optional(),
-    profitClosed: Joi.number().optional(),
-    profitOpen: Joi.number().optional(),
+    profitClosed: Joi.number().precision(2).optional(),
+    profitOpen: Joi.number().precision(2).optional(),
     isGrouped: Joi.boolean().default(false).optional(),
     remarks: Joi.string().allow('').optional(),
     futureOptions: Joi.string().allow('').optional(),

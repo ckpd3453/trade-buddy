@@ -1,6 +1,8 @@
 import HttpStatus from 'http-status-codes';
 import TradingAccount from '../models/tradingAccount.model';
 import User from '../models/user.model';
+import mongoose from 'mongoose';
+import Trade from '../models/trade.model';
 
 export const createBrokerAccount = async (updateBody) => {
   try {

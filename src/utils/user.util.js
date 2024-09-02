@@ -37,7 +37,7 @@ export const sendMail = async (email, userId, type) => {
 
     console.log(token);
 
-    const resetLink = `http://localhost:5000/reset?token=${token}`;
+    const resetLink = `https://tradebuddy-v1.vercel.app/reset/${token}`;
 
     const base64EncodedLink = Buffer.from(resetLink).toString('base64');
     console.log('ResetLink: ' + base64EncodedLink);

@@ -115,19 +115,25 @@ export const getTransactionByInstrumentGraph = async (body) => {
     filteredTrade
   );
 
-  let equity = {
+  let cashEquity = {
     count: 0,
     win: 0,
     loss: 0,
     WinRatio: 0
   };
-  let equityFutures = {
+  let forexOptions = {
     count: 0,
     win: 0,
     loss: 0,
     WinRatio: 0
   };
-  let equityOptions = {
+  let forexFutures = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+  let cryptoFutures = {
     count: 0,
     win: 0,
     loss: 0,
@@ -145,10 +151,33 @@ export const getTransactionByInstrumentGraph = async (body) => {
     loss: 0,
     WinRatio: 0
   };
+
+  let cryptoOptions = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+
+  let indexEquityFutures = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+
+  let indexEquityOptions = {
+    count: 0,
+    win: 0,
+    loss: 0,
+    WinRatio: 0
+  };
+
   tradeCountOninstrumentBase.map((dayTrade) => {
     let totalTradeCount = 0;
     let totalProfitCount = 0;
     let totalLossCount = 0;
+
     dayTrade.instruments.map((trade) => {
       totalTradeCount += trade.count;
       totalProfitCount += trade.ProfitCount;
@@ -157,30 +186,50 @@ export const getTransactionByInstrumentGraph = async (body) => {
       let tradeName = trade.name.toLowerCase();
       // Accumulate totals for each instrument
       switch (tradeName) {
-        case 'equity':
-          equity.count += trade.count;
-          equity.win += trade.ProfitCount;
-          equity.loss += trade.LossCount;
+        case 'cash/equity':
+          cashEquity.count += trade.count;
+          cashEquity.win += trade.ProfitCount;
+          cashEquity.loss += trade.LossCount;
           break;
-        case 'equityfutures':
-          equityFutures.count += trade.count;
-          equityFutures.win += trade.ProfitCount;
-          equityFutures.loss += trade.LossCount;
+        case 'forex options':
+          forexOptions.count += trade.count;
+          forexOptions.win += trade.ProfitCount;
+          forexOptions.loss += trade.LossCount;
           break;
-        case 'equityoptions':
-          equityOptions.count += trade.count;
-          equityOptions.win += trade.ProfitCount;
-          equityOptions.loss += trade.LossCount;
+        case 'forex futures':
+          forexFutures.count += trade.count;
+          forexFutures.win += trade.ProfitCount;
+          forexFutures.loss += trade.LossCount;
           break;
-        case 'commodityoptions':
+        case 'crypto futures':
+          cryptoFutures.count += trade.count;
+          cryptoFutures.win += trade.ProfitCount;
+          cryptoFutures.loss += trade.LossCount;
+          break;
+        case 'crypto options':
+          cryptoOptions.count += trade.count;
+          cryptoOptions.win += trade.ProfitCount;
+          cryptoOptions.loss += trade.LossCount;
+          break;
+        case 'commodity futures':
+          commodityFutures.count += trade.count;
+          commodityFutures.win += trade.ProfitCount;
+          commodityFutures.loss += trade.LossCount;
+          break;
+        case 'commodity options':
           commodityOptions.count += trade.count;
           commodityOptions.win += trade.ProfitCount;
           commodityOptions.loss += trade.LossCount;
           break;
-        case 'commodityfutures':
-          commodityFutures.count += trade.count;
-          commodityFutures.win += trade.ProfitCount;
-          commodityFutures.loss += trade.LossCount;
+        case 'index/equity futures':
+          indexEquityFutures.count += trade.count;
+          indexEquityFutures.win += trade.ProfitCount;
+          indexEquityFutures.loss += trade.LossCount;
+          break;
+        case 'index/equity options':
+          indexEquityOptions.count += trade.count;
+          indexEquityOptions.win += trade.ProfitCount;
+          indexEquityOptions.loss += trade.LossCount;
           break;
       }
     });
@@ -192,24 +241,35 @@ export const getTransactionByInstrumentGraph = async (body) => {
   });
 
   // Calculate WinRatio for each instrument
-  equity.WinRatio = (equity.win / equity.count) * 100;
-  equityFutures.WinRatio = (equityFutures.win / equityFutures.count) * 100;
-  equityOptions.WinRatio = (equityOptions.win / equityOptions.count) * 100;
-  commodityOptions.WinRatio =
-    (commodityOptions.win / commodityOptions.count) * 100;
-  commodityFutures.WinRatio =
-    (commodityFutures.win / commodityFutures.count) * 100;
+  const calculateWinRatio = (instrument) => {
+    instrument.WinRatio =
+      instrument.count > 0 ? (instrument.win / instrument.count) * 100 : 0;
+  };
+
+  calculateWinRatio(cashEquity);
+  calculateWinRatio(forexOptions);
+  calculateWinRatio(forexFutures);
+  calculateWinRatio(cryptoFutures);
+  calculateWinRatio(cryptoOptions);
+  calculateWinRatio(commodityOptions);
+  calculateWinRatio(commodityFutures);
+  calculateWinRatio(indexEquityFutures);
+  calculateWinRatio(indexEquityOptions);
 
   return {
     code: HttpStatus.OK,
     data: {
-      tradeCountOninstrumentBase: tradeCountOninstrumentBase,
+      tradeCountOnInstrumentBase: tradeCountOninstrumentBase,
       totalTradeCount: {
-        equity: equity,
-        equityFutures: equityFutures,
-        equityOptions: equityOptions,
+        cashEquity: cashEquity,
+        forexOptions: forexOptions,
+        forexFutures: forexFutures,
+        cryptoFutures: cryptoFutures,
+        cryptoOptions: cryptoOptions,
         commodityOptions: commodityOptions,
-        commodityFutures: commodityFutures
+        commodityFutures: commodityFutures,
+        indexEquityFutures: indexEquityFutures,
+        indexEquityOptions: indexEquityOptions
       }
     },
     message: 'Trade counts retrieved successfully by date and instrument.'

@@ -151,21 +151,18 @@ export const getTransactionByInstrumentGraph = async (body) => {
     loss: 0,
     WinRatio: 0
   };
-
   let cryptoOptions = {
     count: 0,
     win: 0,
     loss: 0,
     WinRatio: 0
   };
-
   let indexEquityFutures = {
     count: 0,
     win: 0,
     loss: 0,
     WinRatio: 0
   };
-
   let indexEquityOptions = {
     count: 0,
     win: 0,

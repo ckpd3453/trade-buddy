@@ -27,6 +27,10 @@ const tradeAnalysisSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  profitAndLossClosedPostion: {
+    type: Number,
+    default: 0
+  },
   profitAndLossOpenPosition: {
     type: Number,
     default: 0

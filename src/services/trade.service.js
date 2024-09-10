@@ -188,6 +188,8 @@ export const updateTrade = async (tradeId, body) => {
         { new: true, runValidators: true }
       );
 
+      console.log(userId, '====');
+
       if (!updatedUser) {
         return {
           code: HttpStatus.BAD_REQUEST,
@@ -308,32 +310,49 @@ const updateExit = async (tradeId, exitId, exitBody) => {
       await exit.save();
     }
 
-    // Calculate trade analysis for the exit
+    // Determine if the position is still Open or Closed
     const position =
       trade.entryQuantity > newTotalExitQuantity ? 'Open' : 'Close';
+
+    // P/L calculation based on the updated exit price and open positions
     const profitLoss = (exitBody.price - trade.entryPrice) * exitBody.quantity;
+
+    // If the position is Closed, calculate the profit/loss at closure
     const resultClosedPosition =
       position === 'Close' ? (profitLoss < 0 ? 'Loss' : 'Profit') : null;
     const profitClosedPosition =
       resultClosedPosition === 'Profit' ? profitLoss : 0;
     const lossClosedPosition = resultClosedPosition === 'Loss' ? profitLoss : 0;
-    const profitAndLossOpenPosition = position === 'Open' ? profitLoss : 0;
+    const profitAndLossClosedPosition =
+      (exitBody.price - trade.entryPrice) * exitBody.quantity;
+    // P/L for open positions should be calculated using CMP (Current Market Price)
+    const profitAndLossOpenPosition =
+      position === 'Open'
+        ? (trade.cmp - trade.entryPrice) * trade.openQuantity
+        : 0;
 
+    // Calculate trade duration only if the position is closed
     const tradeDuration =
       position === 'Close'
         ? (new Date(exitBody.exitDate) - new Date(trade.entryDate)) /
           (1000 * 60 * 60 * 24)
         : null;
+
+    // Trade strategy based on duration (Investment, Swing, or Intraday)
     const tradeStrategy =
       tradeDuration > 10 || tradeDuration === null
         ? 'Investment'
         : tradeDuration <= 0
         ? 'Intraday'
         : 'Swing';
+
+    // Calculate the investment based on trade type
     const investment =
       trade.tradeType === 'Buy'
         ? trade.entryQuantity * trade.entryPrice
         : exitBody.quantity * exitBody.price;
+
+    // ROI calculation for both Open and Closed positions
     const roi =
       position === 'Open'
         ? (profitAndLossOpenPosition * 100) / investment
@@ -386,12 +405,29 @@ const updateExit = async (tradeId, exitId, exitBody) => {
     if (!trade.exit.includes(exit._id)) {
       trade.exit.push(exit._id);
     }
-    trade.profitClosed = (trade.profitClosed || 0) + profitClosedPosition;
-    trade.profitOpen = (trade.profitOpen || 0) + profitAndLossOpenPosition;
+
+    // Update trade's position status and open quantity
     trade.tradeStatus = position;
     trade.openQuantity = trade.entryQuantity - newTotalExitQuantity;
 
+    let previousProfitAndLossClosedPosition = 0;
+
+    if (existingExit) {
+      // Calculate previous profit/loss for the existing exit
+      previousProfitAndLossClosedPosition =
+        (existingExit.price - trade.entryPrice) * existingExit.quantity;
+    }
+    // Update trade's profitClosed and profitOpen accordingly
+    trade.profitClosed =
+      (trade.profitClosed || 0) -
+      previousProfitAndLossClosedPosition +
+      profitAndLossClosedPosition;
+
+    // Profit for open positions calculated by the difference in CMP and entry price
+    trade.profitOpen = profitAndLossOpenPosition;
+
     await trade.save();
+
     return {
       code: HttpStatus.OK,
       data: trade,
@@ -534,21 +570,24 @@ export const createExit = async (tradeId, body) => {
           trade.entryQuantity > accumulatedExitQuantity ? 'Open' : 'Close';
         const resultClosedPosition =
           position === 'Close'
-            ? (exitBody.price - trade.cmp) * exitBody.quantity < 0
+            ? (exitBody.price - trade.entryPrice) * exitBody.quantity < 0
               ? 'Loss'
               : 'Profit'
             : null;
         const profitClosedPosition =
           resultClosedPosition === 'Profit'
-            ? (exitBody.price - trade.cmp) * exitBody.quantity
+            ? (exitBody.price - trade.entryPrice) * exitBody.quantity
             : 0;
         const lossClosedPosition =
           resultClosedPosition === 'Loss'
-            ? (exitBody.price - trade.cmp) * exitBody.quantity
+            ? (exitBody.price - trade.entryPrice) * exitBody.quantity
             : 0;
+        const profitAndLossClosedPostion =
+          (exitBody.price - trade.entryPrice) * exitBody.quantity;
         const profitAndLossOpenPosition =
           position === 'Open'
-            ? (exitBody.price - trade.cmp) * exitBody.quantity
+            ? (trade.cmp - trade.entryPrice) *
+              (trade.entryQuantity - accumulatedExitQuantity)
             : 0;
 
         const tradeDuration =
@@ -579,6 +618,7 @@ export const createExit = async (tradeId, body) => {
           resultClosedPosition,
           profitClosedPosition,
           lossClosedPosition,
+          profitAndLossClosedPostion,
           profitAndLossOpenPosition,
           tradeDuration,
           tradeStrategy,
@@ -597,13 +637,15 @@ export const createExit = async (tradeId, body) => {
         // Update the trade to include this exit
         trade.exit.push(exit._id);
 
-        // Update trade's profitClosed and profitOpen
-        trade.profitClosed = (trade.profitClosed || 0) + profitClosedPosition;
-        trade.profitOpen = (trade.profitOpen || 0) + profitAndLossOpenPosition;
-
         // Update trade's status and openQuantity
         trade.tradeStatus = position;
         trade.openQuantity = trade.entryQuantity - accumulatedExitQuantity;
+
+        // Update trade's profitClosed and profitOpen
+        trade.profitClosed =
+          (trade.profitClosed || 0) + profitAndLossClosedPostion;
+        // profitAndLossOpenPosition;
+        trade.profitOpen = profitAndLossOpenPosition;
       }
     }
 

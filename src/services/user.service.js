@@ -2,6 +2,7 @@ import User from '../models/user.model';
 import HttpStatus from 'http-status-codes';
 import * as userUtils from '../utils/user.util';
 import OtpModel from '../models/OtpModel';
+import { createBrokerAccount } from './tradingAccount.service';
 
 /**
  * @param {req.body} user
@@ -22,6 +23,11 @@ export const signUp = async (user) => {
 
     const data = new User(secureUser);
     await data.save();
+    const defaultBroker = {
+      userId: data._id,
+      account: 'Default'
+    };
+    await createBrokerAccount(defaultBroker);
 
     await userUtils.sendMail(data.email, data._id, { message: 'registration' });
     return {

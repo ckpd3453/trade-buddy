@@ -61,6 +61,27 @@ export const trashBrokerAccount = async (broker_id) => {
       };
     }
 
+    // Find the broker account by ID
+    const brokerAccount = await TradingAccount.findOne({ _id: broker_id });
+
+    // Check if the broker account exists
+    if (!brokerAccount) {
+      return {
+        code: HttpStatus.BAD_REQUEST,
+        data: null,
+        message: 'No broker account found with the given ID'
+      };
+    }
+
+    // Check if the account is marked as default
+    if (brokerAccount.account === 'Default') {
+      return {
+        code: HttpStatus.FORBIDDEN,
+        data: null,
+        message: 'Default broker account cannot be trashed'
+      };
+    }
+
     // Update the TradingAccount document by setting isDeleted to true and updating the deletedTimeStamp
     const result = await TradingAccount.updateOne(
       { _id: broker_id }, // Condition to match the document
@@ -95,7 +116,7 @@ export const trashBrokerAccount = async (broker_id) => {
       return {
         code: HttpStatus.BAD_REQUEST,
         data: null,
-        message: 'No broker account found with the given ID'
+        message: 'Failed to mark broker account as deleted'
       };
     }
   } catch (error) {

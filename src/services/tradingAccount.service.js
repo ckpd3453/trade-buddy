@@ -7,21 +7,42 @@ import Trade from '../models/trade.model';
 export const createBrokerAccount = async (updateBody) => {
   try {
     const userId = updateBody.userId;
+    const accountName = updateBody.account;
+
+    // Check if an account with the same name already exists for the user
+    const existingAccount = await TradingAccount.findOne({
+      userId,
+      account: accountName
+    });
+
+    if (existingAccount) {
+      return {
+        code: HttpStatus.CONFLICT, // 409 Conflict
+        data: null,
+        message: `An account with the name '${accountName}' already exists for this user`
+      };
+    }
+
+    // Create a new broker account since the name is unique for the user
     const tradingAccount = new TradingAccount({
       userId,
-      account: updateBody.account
+      account: accountName
     });
+
     await tradingAccount.save();
+
     // Update the user to include this trading account
     await User.findByIdAndUpdate(userId, {
       $push: { accountName: tradingAccount._id }
     });
+
     return {
       code: HttpStatus.CREATED,
       data: tradingAccount,
-      message: 'Account created successfully'
+      message: 'Broker account created successfully'
     };
   } catch (error) {
+    console.error('Error in creating broker account:', error);
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
       data: [],

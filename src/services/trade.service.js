@@ -67,7 +67,6 @@ export const createTrade = async (brokerAccountId, body) => {
         (trade.openQuantity = trade.entryQuantity) &&
         (trade.profitOpen =
           (trade.cmp - trade.entryPrice) * trade.openQuantity);
-      console.log('------------>>>>>.', trade.openQuantity);
 
       newTrade = await trade.save();
     }

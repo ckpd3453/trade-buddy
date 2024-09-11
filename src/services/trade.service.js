@@ -149,6 +149,10 @@ export const updateTrade = async (tradeId, body) => {
       }
     }
 
+    updatedData.openQuantity == updatedData.entryQuantity &&
+      (updatedData.profitOpen =
+        (updatedData.cmp - updatedData.entryPrice) * updatedData.openQuantity);
+
     // Update the Trade with new data
     const updatedTrade = await Trade.findByIdAndUpdate(tradeId, updatedData, {
       new: true, // Return the updated document

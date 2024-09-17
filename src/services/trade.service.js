@@ -582,12 +582,15 @@ export const createExit = async (tradeId, body) => {
         const resultClosedPosition =
           position === 'Close'
             ? trade.tradeType === 'Buy'
-              ? (exitBody.price - trade.entryPrice) * exitBody.quantity
+              ? (exitBody.price - trade.entryPrice) * exitBody.quantity < 0
+                ? 'Loss'
+                : 'Profit'
               : (trade.entryPrice - exitBody.price) * exitBody.quantity < 0
               ? 'Loss'
               : 'Profit'
             : null;
-        console.log('------', resultClosedPosition);
+
+        console.log('*************', resultClosedPosition, '***********');
 
         const profitClosedPosition =
           resultClosedPosition === 'Profit'
@@ -595,7 +598,6 @@ export const createExit = async (tradeId, body) => {
               ? (exitBody.price - trade.entryPrice) * exitBody.quantity
               : (trade.entryPrice - exitBody.price) * exitBody.quantity
             : 0;
-        console.log(profitClosedPosition);
 
         const lossClosedPosition =
           resultClosedPosition === 'Loss'
@@ -607,8 +609,6 @@ export const createExit = async (tradeId, body) => {
           trade.tradeType.toUpperCase() === 'BUY'
             ? (exitBody.price - trade.entryPrice) * exitBody.quantity
             : (trade.entryPrice - exitBody.price) * exitBody.quantity;
-
-        console.log('====', profitAndLossClosedPostion);
 
         const profitAndLossOpenPosition =
           trade.cmp > 0 && position === 'Open'

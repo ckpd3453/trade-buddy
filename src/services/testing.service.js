@@ -32,6 +32,7 @@ export const profitAndLossGraph = async (body) => {
   // Get the profit and loss of trades on instrument basis by date
   const profitAndLossOfTrades =
     await getTradeProfitAndLossOnInstrumentBasedByDate(filteredTrades);
+  console.log(profitAndLossGraph);
 
   // Initialize profit and loss tracking for each instrument
   let cashEquity = { count: 0, win: 0, loss: 0 };
@@ -230,13 +231,15 @@ function filterTradesByDuration(trades, currentDate, tradeDuration) {
   }
 
   // Handle monthly trades
-  if (tradeDuration.month !== null) {
+  if (tradeDuration.month != null) {
     const givenMonth = tradeDuration.month;
     filteredTrades = filterTradesByMonthly(filteredTrades, givenMonth);
   } else {
     const currentMonth = currentDate.getMonth() + 1; // Get current month (0-indexed, so +1)
     filteredTrades = filterTradesByMonthly(filteredTrades, currentMonth);
   }
+  console.log(filteredTrades);
+
   return filteredTrades;
 }
 
@@ -334,9 +337,9 @@ function filterTradesByMonthly(trades, month) {
 // Get profit and loss on instrument based on date
 async function getTradeProfitAndLossOnInstrumentBasedByDate(trades) {
   let profitLossByDate = [];
+
   for (const trade of trades) {
     const instrument = trade.instrument.toLowerCase();
-    console.log(instrument);
 
     const entryDate = moment(trade.entryDate).format('YYYY-MM-DD');
 
@@ -345,6 +348,8 @@ async function getTradeProfitAndLossOnInstrumentBasedByDate(trades) {
 
     if (!dateObject) {
       dateObject = { date: entryDate, instruments: [] };
+      console.log(trade.tradeStatus);
+
       if (trade.tradeStatus === 'Close') {
         profitLossByDate.push(dateObject);
       }

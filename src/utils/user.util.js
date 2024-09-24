@@ -18,6 +18,8 @@ export const validatePassword = async (loginUser, dbUser) => {
 };
 
 export const getToken = async (user) => {
+  console.log(process.env.TOKEN_KEY);
+
   const token = jwt.sign(
     {
       id: user._id,

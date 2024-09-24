@@ -1,5 +1,6 @@
 import * as tradeAnalysis from '../services/tradeAnalysis.service';
 import { responseObj } from '../utils/responseDto';
+import * as testing from '../services/testing.service';
 
 export const getTradeAnalysis = async (req, res) => {
   const data = await tradeAnalysis.getAllTradeAnalysis(req.params);
@@ -13,7 +14,8 @@ export const getTransactionByInstrumentGraph = async (req, res) => {
 };
 
 export const profitAndLossGraph = async (req, res) => {
-  const data = await tradeAnalysis.profitAndLossGraph(req.body);
+  // const data = await tradeAnalysis.profitAndLossGraph(req.body);
+  const data = await testing.profitAndLossGraph(req.body);
   res.status(data.code).json(responseObj(data));
 };
 

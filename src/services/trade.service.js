@@ -590,8 +590,6 @@ export const createExit = async (tradeId, body) => {
               : 'Profit'
             : null;
 
-        console.log('*************', resultClosedPosition, '***********');
-
         const profitClosedPosition =
           resultClosedPosition === 'Profit'
             ? trade.tradeType === 'Buy'

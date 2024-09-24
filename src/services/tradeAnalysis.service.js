@@ -358,8 +358,16 @@ async function getTradeCountOnInstrumentBasedByDate(trades) {
 export const profitAndLossGraph = async (body) => {
   const trades = await getAllTradeOfUser(body);
 
+  /*
+    duration : period:{
+      daily: 
+      weekly:
+    } 
+    month:
+    year:
+  */
   const currentDate = new Date();
-  const tradeDuration = 200;
+  const tradeDuration = body.duration;
   const filteredTrade = getLatestTrades(trades, currentDate, tradeDuration);
 
   const profitAndLossOfTrades =

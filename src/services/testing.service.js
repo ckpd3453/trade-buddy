@@ -145,7 +145,9 @@ export const profitAndLossGraph = async (body) => {
             totalLoss: 0,
             totalTradeCount: 0,
             Win: 0,
-            Loss: 0
+            Loss: 0,
+            averageWin: 0,
+            averageLoss: 0
           };
     }
 
@@ -169,8 +171,6 @@ export const profitAndLossGraph = async (body) => {
           weeklyPnl[`week-${weekNumber}`].totalTradeCount +=
             trade.totalTradeCount || 0;
 
-          console.log(trade.instruments[0], ']]]]]]]]]]]]]');
-
           // Check if roi_percentage is valid and default to 0 if it's null or undefined
           weeklyPnl[`week-${weekNumber}`].roi +=
             trade.instruments[0].roi_percentage != null
@@ -185,6 +185,12 @@ export const profitAndLossGraph = async (body) => {
             trade.totalTradeCount || 0;
           weeklyPnl[`week-${weekNumber}`].Win += trade.Win || 0;
           weeklyPnl[`week-${weekNumber}`].Loss += trade.Loss || 0;
+          weeklyPnl[`week-${weekNumber}`].averageWin =
+            weeklyPnl[`week-${weekNumber}`].Win /
+            weeklyPnl[`week-${weekNumber}`].totalTradeCount;
+          weeklyPnl[`week-${weekNumber}`].averageLoss =
+            weeklyPnl[`week-${weekNumber}`].Loss /
+            weeklyPnl[`week-${weekNumber}`].totalTradeCount;
         }
       }
     });
